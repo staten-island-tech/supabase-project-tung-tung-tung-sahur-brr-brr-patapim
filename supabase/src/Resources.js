@@ -1,7 +1,8 @@
 class Resources {
     constructor() {
         this.toLoad = {
-            sky: "/sprites/Tilesets/Grass.png",
+            sky: "../public/sprites/Tilesets/Grass.png",
+            g: "../public/sprites/Tilesets/Water.png"
         }
 
         this.images = {};

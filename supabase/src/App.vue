@@ -1,21 +1,17 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <canvas id="game-canvas"></canvas>
+  <div id="app">
+    <Canvas />
+  </div>
 </template>
 
-<style scoped>
-html{
- padding: 0;
- margin: 0;
- overflow: hidden;
-}
+<script lang="ts">
+import { defineComponent } from 'vue';
+import Canvas from './components/Canvas.vue'; // Import the Canvas component
 
-canvas{
-  width: 100%;
-  background: blue;
-}
-</style>
+export default defineComponent({
+  name: 'App',
+  components: {
+    Canvas,
+  },
+});
+</script>
