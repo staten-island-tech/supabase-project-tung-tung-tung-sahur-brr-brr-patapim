@@ -6,7 +6,7 @@
   
   <script lang="ts">
   import { defineComponent, onMounted, ref } from 'vue';
-  import { resources } from './Resources'; // Import resources as needed
+  import { resources } from '../Resources.js'; // Import resources as needed
   
   export default defineComponent({
     name: 'Canvas',
