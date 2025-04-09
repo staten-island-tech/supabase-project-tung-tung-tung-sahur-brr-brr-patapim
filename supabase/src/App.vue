@@ -4,14 +4,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
 import Canvas from './components/Canvas.vue'; // Import the Canvas component
-
-export default defineComponent({
-  name: 'App',
-  components: {
-    Canvas,
-  },
-});
 </script>
+
+<style scoped>
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+</style>
