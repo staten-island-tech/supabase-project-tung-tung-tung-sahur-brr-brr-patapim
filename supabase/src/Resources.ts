@@ -4,8 +4,8 @@ class Resources {
 
     constructor() {
         this.toLoad = {
-            sky: "../public/HytopiaWorld25.png",
-            g: "../public/HytopiaWorld25.png"
+            sky: "../sprites/Sprout Lands - Sprites - Basic pack/Tilesets/Grass.png",
+            g: "../sprites/Sprout Lands - Sprites - Basic pack/Tilesets/Grass.png"
         };
 
         this.images = {};

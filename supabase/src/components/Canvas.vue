@@ -19,12 +19,12 @@ const draw = () => {
       console.log(sky)
       if (sky.isLoaded) {
         console.log("thing")
-        ctx.drawImage(sky.image, 0, 0);
+        ctx.drawImage(sky.image, 0,0,50,50,0, 0, 320, 180);
       }
 
       const g = resources.images.g;
       if (g.isLoaded) {
-        ctx.drawImage(g.image, 0, 0);
+        ctx.drawImage(g.image, 0,0,0,0, 0, 0, 320,180);
       }
     }
   }
