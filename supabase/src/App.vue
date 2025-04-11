@@ -1,11 +1,12 @@
 <template>
   <div id="app">
-    <Canvas />
+    <Test/>
   </div>
 </template>
 
 <script lang="ts" setup>
 import Canvas from './components/Canvas.vue'; // Import the Canvas component
+import Test from './components/Test.vue'
 </script>
 
 <style scoped>
