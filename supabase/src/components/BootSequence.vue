@@ -1,0 +1,36 @@
+<template>
+  <div>
+    <p v-for="(line, index) in bootMessages" :key="index">{{ line }}</p>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, onMounted, defineEmits } from 'vue'
+
+const bootMessages = ref<string[]>([])
+const allMessages: string[] = [
+  'Initializing system...',
+  'Loading assets...',
+  'Connecting to server...',
+  'System boot complete.',
+]
+
+const emit = defineEmits(['boot-complete'])
+
+function startBootSequence(): void {
+  let index = 0
+  const interval = setInterval(() => {
+    if (index < allMessages.length) {
+      bootMessages.value.push(allMessages[index])
+      index++
+    } else {
+      clearInterval(interval)
+      emit('boot-complete')
+    }
+  }, 1000) //delay in milliseconds
+}
+
+onMounted(() => {
+  startBootSequence()
+})
+</script>
