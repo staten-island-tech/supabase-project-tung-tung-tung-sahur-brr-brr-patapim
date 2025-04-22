@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Test/>
+    <Canvas/>
   </div>
 </template>
 

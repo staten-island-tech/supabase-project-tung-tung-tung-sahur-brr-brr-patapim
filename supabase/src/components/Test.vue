@@ -12,12 +12,12 @@ onMounted(() => {
     const ctx = canvas.getContext('2d');
 
     const image = new Image();
-    image.src = '../assets/!Chest.png'; // Make sure your sprite sheet is accessible
+    image.src = '../assets/Chest.png'; // Make sure your sprite sheet is accessible
     console.log("thing")
     image.onLoad = () => {
         const tileWidth = 64;
         const tileHeight = 64;
-
+        console.log("thing2")
         const col = 1; // second chest
         const row = 0; // first row
         
