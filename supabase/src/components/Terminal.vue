@@ -19,15 +19,30 @@ const logs = ref<string[]>([])
 
 function handleBootComplete(): void {
   isBooting.value = false
+  logs.value.push(`
+ __   __     ______     __    __     ______
+/\\ "-.\\ \\   /\\  __ \\   /\\ "-./  \\   /\\  ___\\
+\\ \\ \\-.  \\  \\ \\  __ \\  \\ \\ \\-./\\ \\  \\ \\  __\\
+ \\ \\_\\"\\_\\  \\ \\_\\ \\_\\  \\ \\_\\ \\ \\_\\  \\ \\_____\\
+  \\/_/ \\/_/   \\/_/\\/_/   \\/_/  \\/_/   \\/_____/
+
+  `)
   logs.value.push('System ready. Type "help" for a list of commands.')
 }
-
 function handleCommand(command: string): void {
   logs.value.push(`> ${command}`)
-  if (command === 'start') {
-    logs.value.push('Starting the game...')
-  } else if (command === 'help') {
-    logs.value.push('Available commands: start, help')
+
+  // Define a command map
+  const commandMap: Record<string, () => void> = {
+    start: () => logs.value.push('Starting the game...'),
+    help: () => logs.value.push('Available commands: start, help, about'),
+    about: () => logs.value.push('This is a terminal-based game interface.'),
+    clear: () => logs.value.splice(0, logs.value.length),
+  }
+
+  // Execute the command if it exists in the map
+  if (commandMap[command]) {
+    commandMap[command]()
   } else {
     logs.value.push(`Unknown command: ${command}`)
   }

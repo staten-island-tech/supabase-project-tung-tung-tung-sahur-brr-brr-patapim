@@ -27,10 +27,19 @@ function startBootSequence(): void {
       clearInterval(interval)
       emit('boot-complete')
     }
-  }, 1000) //delay in milliseconds
+  }, 1250) // delay in milliseconds
+}
+
+function playBootSound(): void {
+  console.log('Playing boot sound...')
+  const audio = new Audio('/audios/boot.mp3')
+  audio.play().catch((error) => {
+    console.error('Error playing boot sound:', error)
+  })
 }
 
 onMounted(() => {
   startBootSequence()
+  playBootSound()
 })
 </script>
