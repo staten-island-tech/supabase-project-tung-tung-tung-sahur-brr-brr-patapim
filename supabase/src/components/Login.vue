@@ -3,28 +3,50 @@ import { ref } from 'vue'
 import { supabase } from '../supabase.ts'
 
 const loading = ref(false)
-const email = ref('')
+const username = ref('')
 const password = ref('')
-const isLogin = ref(true) // Toggle between login and sign-up
+const isLogin = ref(true)
 
 const handleAuth = async () => {
   try {
     loading.value = true
-    const { error } = isLogin.value
-      ? await supabase.auth.signInWithPassword({ email: email.value, password: password.value })
-      : await supabase.auth.signUp({ email: email.value, password: password.value })
 
-    if (error) throw error
+    if (isLogin.value) {
+      // Login logic
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, password')
+        .eq('username', username.value)
+        .single()
 
-    alert(
-      isLogin.value
-        ? 'Logged in successfully!'
-        : 'Signed up successfully! Check your email to confirm your account.'
-    )
-  } catch (error) {
-    if (error instanceof Error) {
-      alert(error.message)
+      if (error || !data) {
+        throw new Error('User not found')
+      }
+
+      if (data.password !== password.value) {
+        throw new Error('Incorrect password')
+      }
+
+      alert('Logged in successfully!')
+    } else {
+      // Sign-up logic
+      const { error } = await supabase
+        .from('users')
+        .insert([
+          {
+            username: username.value,
+            password: password.value // ⚠️ Plaintext password — not secure!
+          }
+        ])
+
+      if (error) {
+        throw error
+      }
+
+      alert('Signed up successfully!')
     }
+  } catch (error) {
+    alert(error.message)
   } finally {
     loading.value = false
   }
@@ -34,11 +56,11 @@ const handleAuth = async () => {
 <template>
   <form class="row flex-center flex" @submit.prevent="handleAuth">
     <div class="col-6 form-widget">
-      <h1 class="header">Supabase + Vue 3</h1>
-      <p class="description">{{ isLogin ? 'Log in with email' : 'Sign up with email and password' }}</p>
+      <h1 class="header">Supabase + Vue 3 (Username Auth)</h1>
+      <p class="description">{{ isLogin ? 'Log in with username' : 'Sign up with username and password' }}</p>
 
       <div>
-        <input class="inputField" required type="email" placeholder="Your email" v-model="email" />
+        <input class="inputField" required type="text" placeholder="Your username" v-model="username" />
       </div>
       <div>
         <input class="inputField" required type="password" placeholder="Your password" v-model="password" />
