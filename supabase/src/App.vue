@@ -1,11 +1,10 @@
 
-<script setup lang="ts">
+<script setup lang="js">
 import { RouterLink, RouterView } from 'vue-router'
 import Terminal from './components/Terminal.vue'
-
-import { onMounted, ref } from 'vue'
 import Account from './components/Account.vue'
 import Login from './components/Login.vue'
+import { onMounted, ref } from 'vue'
 import { supabase } from './supabase.ts'
 
 const session = ref()

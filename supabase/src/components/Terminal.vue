@@ -11,8 +11,8 @@
         Searching for existing user<span>{{ dots }}</span>
       </div>
       <div v-else-if="isCreatingUser" class="creating-user">
-        Enter a username:
-        <CommandLine @command-entered="handleUsernameInput" />
+        Enter a email:
+        <CommandLine @command-entered="handleEmailInput" />
       </div>
       <div v-else-if="isRequestingPassword" class="requesting-password">
         Enter a password:
@@ -70,11 +70,11 @@ function startUserCreation(): void {
   isCreatingUser.value = true
 }
 
-function handleUsernameInput(username: string): void {
-  logs.value.push(`> ${username}`)
+function handleEmailInput(email: string): void {
+  logs.value.push(`> ${email}`)
 
-  if (username.trim()) {
-    logs.value.push(`Username "${username}" accepted. Please enter a password.`)
+  if (email.trim()) {
+    logs.value.push(`Email "${email}" accepted. Please enter a password.`)
     isCreatingUser.value = false
     isRequestingPassword.value = true
   } else {
