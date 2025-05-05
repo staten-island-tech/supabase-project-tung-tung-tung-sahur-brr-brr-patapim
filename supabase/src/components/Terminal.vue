@@ -4,13 +4,13 @@
     <div v-else>
       <OutputLog :logs="logs" />
       <CommandLine
-        v-if="!isSearching && !isCreatingUser && !isRequestingPassword"
+        v-if="!isSearching && !isCreatingUser && !isRequestingPassword && !isLoggingIn"
         @command-entered="handleCommand"
       />
       <div v-else-if="isSearching" class="searching">
         Searching for existing user<span>{{ dots }}</span>
       </div>
-      <div v-else-if="isCreatingUser" class="creating-user">
+      <div v-else-if="isCreatingUser || isLoggingIn" class="input-user">
         Enter a email:
         <CommandLine @command-entered="handleEmailInput" />
       </div>
@@ -34,6 +34,7 @@ const isBooting = ref(true)
 const isSearching = ref(false)
 const isCreatingUser = ref(false)
 const isRequestingPassword = ref(false)
+const isLoggingIn = ref(false)
 const logs = ref<string[]>([])
 const dots = ref('')
 const loggedIn = ref(false)
@@ -60,6 +61,7 @@ function handleCommand(command: string): void {
     clear: () => logs.value.splice(0, logs.value.length),
     clr: () => logs.value.splice(0, logs.value.length),
     'create-user': () => startUserCreation(),
+    'login-user': () => startUserLogin(),
   }
 
   if (commandMap[command]) {
@@ -73,12 +75,17 @@ function startUserCreation(): void {
   isCreatingUser.value = true
 }
 
+function startUserLogin(): void {
+  isLoggingIn.value = true
+}
+
 function handleEmailInput(email: string): void {
   logs.value.push(`> ${email}`)
 
   if (email.trim()) {
     logs.value.push(`Email "${email}" accepted. Please enter a password.`)
     isCreatingUser.value = false
+    isLoggingIn.value = false
     isRequestingPassword.value = true
     email_supabase.value = email.trim()
   } else {
@@ -146,7 +153,7 @@ function checkUserAuthentication(): boolean {
   margin-top: 10px;
 }
 
-.creating-user {
+.input-user {
   font-family: monospace;
   color: lime;
   margin-top: 10px;
