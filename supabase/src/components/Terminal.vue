@@ -28,6 +28,7 @@ import { useRouter } from 'vue-router'
 import BootSequence from './BootSequence.vue'
 import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
+import { supabase } from '../supabase.ts'
 
 const isBooting = ref(true)
 const isSearching = ref(false)
@@ -36,6 +37,8 @@ const isRequestingPassword = ref(false)
 const logs = ref<string[]>([])
 const dots = ref('')
 const loggedIn = ref(false)
+const email_supabase = ref('')
+const password_supabase = ref('')
 
 const router = useRouter()
 
@@ -77,9 +80,11 @@ function handleEmailInput(email: string): void {
     logs.value.push(`Email "${email}" accepted. Please enter a password.`)
     isCreatingUser.value = false
     isRequestingPassword.value = true
+    email_supabase.value = email.trim()
   } else {
-    logs.value.push('Invalid username. Please try again.')
+    logs.value.push('Empty email. Please try again.')
   }
+
 }
 
 function handlePasswordInput(password: string): void {
@@ -88,10 +93,14 @@ function handlePasswordInput(password: string): void {
   if (password.trim()) {
     logs.value.push('Password set successfully.')
     isRequestingPassword.value = false
+    password_supabase.value = password.trim()
   } else {
-    logs.value.push('Invalid password. Please try again.')
+    logs.value.push('Empty password. Please try again.')
   }
+
+  handleAuth()
 }
+
 
 function clearTerminal(): void {
   logs.value.splice(0, logs.value.length)
