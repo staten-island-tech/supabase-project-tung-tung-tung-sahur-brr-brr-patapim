@@ -1,7 +1,6 @@
 <template>
   <div>
     <div v-for="(log, index) in logs" :key="index">
-      <!-- Check if the log contains newlines and render it inside a <pre> tag -->
       <pre v-if="log.includes('\n')">{{ log }}</pre>
       <p v-else>{{ log }}</p>
     </div>

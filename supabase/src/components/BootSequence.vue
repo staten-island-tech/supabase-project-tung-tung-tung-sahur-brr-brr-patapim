@@ -27,7 +27,7 @@ function startBootSequence(): void {
       clearInterval(interval)
       emit('boot-complete')
     }
-  }, 1250) // delay in milliseconds
+  }, 1250)
 }
 
 function playBootSound(): void {

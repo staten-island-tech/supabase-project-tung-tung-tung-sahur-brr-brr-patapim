@@ -7,8 +7,6 @@ const { session } = toRefs(props)
 
 const loading = ref(true)
 const username = ref('')
-const website = ref('')
-const avatar_url = ref('')
 
 onMounted(() => {
   getProfile()
@@ -29,8 +27,6 @@ async function getProfile() {
 
     if (data) {
       username.value = data.username
-      website.value = data.website
-      avatar_url.value = data.avatar_url
     }
   } catch (error) {
     alert(error.message)
@@ -47,8 +43,6 @@ async function updateProfile() {
     const updates = {
       id: user.id,
       username: username.value,
-      website: website.value,
-      avatar_url: avatar_url.value,
       updated_at: new Date(),
     }
 
@@ -85,11 +79,6 @@ async function signOut() {
       <label for="username">Name</label>
       <input id="username" type="text" v-model="username" />
     </div>
-    <div>
-      <label for="website">Website</label>
-      <input id="website" type="url" v-model="website" />
-    </div>
-
     <div>
       <input
         type="submit"

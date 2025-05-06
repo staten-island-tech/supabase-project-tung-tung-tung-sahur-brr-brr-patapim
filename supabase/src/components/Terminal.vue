@@ -4,13 +4,13 @@
     <div v-else>
       <OutputLog :logs="logs" />
       <CommandLine
-        v-if="!isSearching && !isCreatingUser && !isRequestingPassword && !isLoggingIn"
+        v-if="!isSearching && !isAssigningUser && !isRequestingPassword"
         @command-entered="handleCommand"
       />
       <div v-else-if="isSearching" class="searching">
         Searching for existing user<span>{{ dots }}</span>
       </div>
-      <div v-else-if="isCreatingUser || isLoggingIn" class="input-user">
+      <div v-else-if="isAssigningUser" class="input-user">
         Enter a email:
         <CommandLine @command-entered="handleEmailInput" />
       </div>
@@ -32,7 +32,7 @@ import { supabase } from '../supabase.ts'
 
 const isBooting = ref(true)
 const isSearching = ref(false)
-const isCreatingUser = ref(false)
+const isAssigningUser = ref(false)
 const isRequestingPassword = ref(false)
 const isLoggingIn = ref(false)
 const logs = ref<string[]>([])
@@ -56,11 +56,11 @@ function handleCommand(command: string): void {
 
   const commandMap: Record<string, () => void> = {
     'start-game': () => startSearch(),
-    help: () => logs.value.push('Available commands: start-game, help, about, create-user'),
+    help: () => logs.value.push('Available commands: start-game, help, about, create-user, login-user'),
     about: () => logs.value.push('This is a terminal-based game interface.'),
     clear: () => logs.value.splice(0, logs.value.length),
     clr: () => logs.value.splice(0, logs.value.length),
-    'create-user': () => startUserCreation(),
+    'create-user': () => startUserAssignment(),
     'login-user': () => startUserLogin(),
   }
 
@@ -71,11 +71,12 @@ function handleCommand(command: string): void {
   }
 }
 
-function startUserCreation(): void {
-  isCreatingUser.value = true
+function startUserAssignment(): void {
+  isAssigningUser.value = true
 }
 
 function startUserLogin(): void {
+  startUserAssignment()
   isLoggingIn.value = true
 }
 
@@ -84,8 +85,7 @@ function handleEmailInput(email: string): void {
 
   if (email.trim()) {
     logs.value.push(`Email "${email}" accepted. Please enter a password.`)
-    isCreatingUser.value = false
-    isLoggingIn.value = false
+    isAssigningUser.value = false
     isRequestingPassword.value = true
     email_supabase.value = email.trim()
   } else {
@@ -108,6 +108,24 @@ function handlePasswordInput(password: string): void {
   handleAuth()
 }
 
+const handleAuth = async () => {
+  try {
+    const { error } = isLoggingIn.value
+      ? await supabase.auth.signInWithPassword({ email: email_supabase.value, password: password_supabase.value })
+      : await supabase.auth.signUp({ email: email_supabase.value, password: password_supabase.value })
+
+    if (error) throw error
+
+    isLoggingIn.value
+      ? logs.value.push('Login successful.')
+      : logs.value.push('Signup successful.')
+  } 
+  catch (error) {
+    if (error instanceof Error) {
+      logs.value.push("Error. Please try again.")
+    }
+  } 
+}
 
 function clearTerminal(): void {
   logs.value.splice(0, logs.value.length)
