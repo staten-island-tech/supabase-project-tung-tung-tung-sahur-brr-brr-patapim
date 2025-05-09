@@ -83,13 +83,18 @@ function startUserLogin(): void {
 function handleEmailInput(email: string): void {
   logs.value.push(`> ${email}`)
 
-  if (email.trim()) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+  if (re.test(email.toLowerCase()) == true) {
     logs.value.push(`Email "${email}" accepted. Please enter a password.`)
     isAssigningUser.value = false
     isRequestingPassword.value = true
     email_supabase.value = email.trim()
+  } else if(re) {
+    logs.value.push('Invalid email. Please try again.')
   } else {
-    logs.value.push('Empty email. Please try again.')
+
   }
 
 }
@@ -97,12 +102,13 @@ function handleEmailInput(email: string): void {
 function handlePasswordInput(password: string): void {
   logs.value.push(`> ${'*'.repeat(password.length)}`)
 
-  if (password.trim()) {
+  if (password.length >= 6) {
     logs.value.push('Password set successfully.')
     isRequestingPassword.value = false
     password_supabase.value = password.trim()
   } else {
-    logs.value.push('Empty password. Please try again.')
+    logs.value.push('Password must be of length 6 or greater. Please try again.')
+    return
   }
 
   handleAuth()
