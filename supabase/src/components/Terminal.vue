@@ -36,6 +36,8 @@ const isRequestingPassword = ref(false)
 const logs = ref<string[]>([])
 const dots = ref('')
 const loggedIn = ref(false)
+const email = ref('')
+const password = ref<string>('')
 
 const router = useRouter()
 
