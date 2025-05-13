@@ -40,6 +40,7 @@ const dots = ref('')
 const loggedIn = ref(false)
 const email_supabase = ref('')
 const password_supabase = ref('')
+const emailExists = ref(false)
 
 const router = useRouter()
 
@@ -85,16 +86,19 @@ function handleEmailInput(email: string): void {
 
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-
   if (re.test(email.toLowerCase()) == true) {
-    logs.value.push(`Email "${email}" accepted. Please enter a password.`)
-    isAssigningUser.value = false
-    isRequestingPassword.value = true
-    email_supabase.value = email.trim()
-  } else if(re) {
-    logs.value.push('Invalid email. Please try again.')
+    checkIfEmailExists()
+    if (emailExists) {
+      logs.value.push(`Email "${email}" accepted. Please enter a password.`)
+      isAssigningUser.value = false
+      isRequestingPassword.value = true
+      email_supabase.value = email.trim()
+    } else {
+      logs.value.push('Email already exists. Please try again.')
+    }
   } else {
-
+    logs.value.push(`Invalid email format. Please try again.`);
+    return
   }
 
 }
@@ -103,7 +107,7 @@ function handlePasswordInput(password: string): void {
   logs.value.push(`> ${'*'.repeat(password.length)}`)
 
   if (password.length >= 6) {
-    logs.value.push('Password set successfully.')
+    logs.value.push('Password entered successfully.')
     isRequestingPassword.value = false
     password_supabase.value = password.trim()
   } else {
@@ -125,13 +129,33 @@ const handleAuth = async () => {
     isLoggingIn.value
       ? logs.value.push('Login successful.')
       : logs.value.push('Signup successful.')
+
+    isLoggingIn.value = false
+    loggedIn.value = true
   } 
   catch (error) {
     if (error instanceof Error) {
-      logs.value.push("Error. Please try again.")
+      console.log(error)
+      logs.value.push(`${error.message}. Please try again.`)
     }
   } 
 }
+
+const checkIfEmailExists = async () => {
+  const { data, error } = await supabase
+    .from('users_emails')
+    .select('id') 
+    .ilike('email', email_supabase.value) 
+
+  if (error) {
+    console.error('Error checking email:', error)
+    return 
+  }
+
+  if (data.length > 0) {
+    emailExists.value = true
+  }
+} 
 
 function clearTerminal(): void {
   logs.value.splice(0, logs.value.length)
