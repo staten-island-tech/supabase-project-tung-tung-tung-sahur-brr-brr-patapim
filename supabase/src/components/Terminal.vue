@@ -30,17 +30,18 @@ import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
 import { supabase } from '../supabase.ts'
 
-const isBooting = ref(true)
-const isSearching = ref(false)
-const isAssigningUser = ref(false)
-const isRequestingPassword = ref(false)
-const isLoggingIn = ref(false)
-const logs = ref<string[]>([])
-const dots = ref('')
-const loggedIn = ref(false)
-const email_supabase = ref('')
-const password_supabase = ref('')
-const emailExists = ref(false)
+const isBooting = ref<boolean>(true);
+const isSearching = ref<boolean>(false);
+const isAssigningUser = ref<boolean>(false);
+const isRequestingPassword = ref<boolean>(false);
+const isLoggingIn = ref<boolean>(false);
+const logs = ref<string[]>([]);
+const dots = ref<string>('');
+const loggedIn = ref<boolean>(false);
+const email_supabase = ref<string>('');
+const password_supabase = ref<string>('');
+const emailExists = ref<boolean>(false);
+
 
 const router = useRouter()
 
@@ -81,26 +82,31 @@ function startUserLogin(): void {
   isLoggingIn.value = true
 }
 
-function handleEmailInput(email: string): void {
+async function handleEmailInput(email: string): Promise<void> {
   logs.value.push(`> ${email}`)
 
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (re.test(email.toLowerCase()) == true) {
-    checkIfEmailExists()
-    if (emailExists) {
+    email_supabase.value = email.trim()
+
+    await checkIfEmailExists()
+
+    if (!emailExists.value) {
       logs.value.push(`Email "${email}" accepted. Please enter a password.`)
       isAssigningUser.value = false
       isRequestingPassword.value = true
-      email_supabase.value = email.trim()
     } else {
       logs.value.push('Email already exists. Please try again.')
+      email_supabase.value = ""
+      emailExists.value = false
+      return
     }
+
   } else {
     logs.value.push(`Invalid email format. Please try again.`);
     return
   }
-
 }
 
 function handlePasswordInput(password: string): void {
@@ -143,7 +149,7 @@ const handleAuth = async () => {
 
 const checkIfEmailExists = async () => {
   const { data, error } = await supabase
-    .from('users_emails')
+    .from('user_emails')
     .select('id') 
     .ilike('email', email_supabase.value) 
 
@@ -160,6 +166,7 @@ const checkIfEmailExists = async () => {
 function clearTerminal(): void {
   logs.value.splice(0, logs.value.length)
 }
+
 function startSearch(): void {
   isSearching.value = true
   let dotCount = 0

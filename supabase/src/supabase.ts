@@ -5,4 +5,40 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+
+async function getUserIdByEmail(email: string): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('user_emails')
+      .select('user_id') // Adjust if your user ID is named differently
+      .eq('email', email)
+      .single()  // Get a single row (assuming the email is unique)
+  
+    if (error || !data) {
+      console.error('Error fetching user ID:', error)
+      return null
+    }
+  
+    return data.user_id
+  }
+  
+async function deleteUserByEmail(email: string): Promise<boolean> {
+    const userId = await getUserIdByEmail(email)
+  
+    if (!userId) {
+      console.log(`No user found with email: ${email}`)
+      return false
+    }
+  
+    // Now delete the user by user_id using the Admin API
+    const { error } = await supabase.auth.admin.deleteUser(userId)
+  
+    if (error) {
+      console.error('Failed to delete user:', error.message)
+      return false
+    }
+  
+    console.log(`User with email "${email}" deleted successfully.`)
+    return true
+  }
+  
 // testing
