@@ -6,10 +6,10 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 
-async function getUserIdByEmail(email: string): Promise<string | null> {
+export async function getUserIdByEmail(email: string): Promise<string | null> {
     const { data, error } = await supabase
       .from('user_emails')
-      .select('user_id') // Adjust if your user ID is named differently
+      .select('id') // Adjust if your user ID is named differently
       .eq('email', email)
       .single()  // Get a single row (assuming the email is unique)
   
@@ -18,10 +18,10 @@ async function getUserIdByEmail(email: string): Promise<string | null> {
       return null
     }
   
-    return data.user_id
+    return data.id
   }
   
-async function deleteUserByEmail(email: string): Promise<boolean> {
+export async function deleteUserByEmail(email: string): Promise<boolean> {
     const userId = await getUserIdByEmail(email)
   
     if (!userId) {
