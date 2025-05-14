@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import BootSequence from './BootSequence.vue'
 import CommandLine from './CommandLine.vue'
@@ -50,7 +50,7 @@ function handleBootComplete(): void {
   logs.value.push(`
     JARVIS LI OS
   `)
-  logs.value.push('System ready. Type "help" for a list of commands.')
+  logs.value.push('System ready. Type "help" for a list of commands. Press "esc" to cancel any command.')
 }
 
 function handleCommand(command: string): void {
@@ -190,6 +190,28 @@ function checkUserAuthentication(): boolean {
     return false
   }
 }
+
+function handleKeydown(event: KeyboardEvent): void {
+  const key = event.key.toLowerCase()
+  
+  if (key === 'escape') {
+    if (isAssigningUser.value || isRequestingPassword.value) {
+      logs.value.push('Operation cancelled.')
+      isAssigningUser.value = false
+      isRequestingPassword.value = false
+      email_supabase.value = ''
+      password_supabase.value = ''
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <style>
