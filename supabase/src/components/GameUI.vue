@@ -2,25 +2,42 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  // Play television sound first
   const tvAudio = new Audio('/audios/television.mp3')
 
-  tvAudio.play().catch((error) => {
+  tvAudio.play().catch((error: unknown) => {
     console.error('Error playing television sound:', error)
   })
 
-  // When television sound ends, play and loop game audio
   tvAudio.onended = () => {
     console.log('Television sound ended, starting game audio...')
     const gameAudio = new Audio('/audios/eerie.mp3') // Adjust path as needed
     gameAudio.loop = true
-    gameAudio.play().catch((error) => {
+    gameAudio.play().catch((error: unknown) => {
       console.error('Error playing game audio:', error)
     })
   }
-})
 
-// You can remove the standalone playSound function if not needed elsewhere
+  let hoverAudio: InstanceType<typeof Audio> | null = null
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.buttons-container button')
+  buttons.forEach((button) => {
+    button.addEventListener('mouseenter', () => {
+      if (hoverAudio && !hoverAudio.ended) {
+        return
+      }
+      hoverAudio = new Audio('/sfx/hover.mp3')
+      hoverAudio.play().catch((error: unknown) => {
+        console.error('Error playing hover sound:', error)
+      })
+    })
+    button.addEventListener('click', () => {
+      const clickAudio = new Audio('/sfx/click.mp3')
+      clickAudio.play().catch((error: unknown) => {
+        console.error('Error playing click sound:', error)
+      })
+    })
+  })
+})
 </script>
 
 <template>
@@ -32,6 +49,10 @@ onMounted(() => {
 
       <div class="tv-content">
         <div class="background">
+          <div class="red-eyes">
+            <div class="eye left-eye"></div>
+            <div class="eye right-eye"></div>
+          </div>
           <div class="buttons-container">
             <button>
               <img src="/buttons/Start.png" alt="" class="rounded-3xl" />
@@ -46,7 +67,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Your existing button styles */
 .background {
   background-color: black;
   background-size: cover;
@@ -56,6 +76,47 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.red-eyes {
+  position: absolute;
+  top: 20%;
+  display: flex;
+  justify-content: space-between;
+  width: 15%;
+  animation: eyes-fade 6s infinite alternate;
+}
+
+.eye {
+  width: 50px;
+  height: 50px;
+  background-color: red;
+  border-radius: 50%;
+  box-shadow: 0 0 20px 10px red;
+}
+
+.left-eye {
+  margin-right: 20px;
+}
+
+.right-eye {
+  margin-left: 20px;
+}
+
+@keyframes eyes-fade {
+  0% {
+    opacity: 0.1;
+    transform: scale(0.15);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(0.2);
+  }
+  100% {
+    opacity: 0.1;
+    transform: scale(0.15);
+  }
 }
 
 .buttons-container {
