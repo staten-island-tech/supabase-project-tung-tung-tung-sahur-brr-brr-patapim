@@ -8,15 +8,18 @@
 import { ref, onMounted, defineEmits } from 'vue'
 
 const bootMessages = ref<string[]>([])
+const isLoggedIn = ref<boolean>(false) //Additions will be made to determine whether user is logged in or not. Eric Chen 05/24
 const allMessages: string[] = [
   'Initializing system...',
   'Loading assets...',
   'Connecting to server...',
+  'Checking if user is logged in...',
+  'Verifying user credentials...',
   'System boot complete.',
 ]
 
 const emit = defineEmits(['boot-complete'])
-
+s
 function startBootSequence(): void {
   let index = 0
   const interval = setInterval(() => {
