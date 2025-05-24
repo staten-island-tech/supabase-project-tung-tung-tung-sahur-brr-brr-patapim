@@ -172,19 +172,19 @@ function clearTerminal(): void {
 }
 
 function startSearch(): void {
-  isSearching.value = true
-  let dotCount = 0
-
-  const interval = setInterval(() => {
-    dotCount = (dotCount + 1) % 4
-    dots.value = '.'.repeat(dotCount)
-  }, 500)
-
-  setTimeout(() => {
-    clearInterval(interval)
-    isSearching.value = false
-    logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
-  }, 3000)
+  router.push({ name: 'game' })
+  //temporarily disabled the search to test rerouting to the startgame page 05/24 Eric Chen
+  // isSearching.value = true
+  // let dotCount = 0
+  // const interval = setInterval(() => {
+  //   dotCount = (dotCount + 1) % 4
+  //   dots.value = '.'.repeat(dotCount)
+  // }, 500)
+  // setTimeout(() => {
+  //   clearInterval(interval)
+  //   isSearching.value = false
+  //   logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
+  // }, 3000)
 }
 
 function checkUserAuthentication(): boolean {
