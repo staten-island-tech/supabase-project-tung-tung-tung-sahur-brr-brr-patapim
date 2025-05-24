@@ -30,18 +30,17 @@ import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
 import { supabase } from '../supabase.ts'
 
-const isBooting = ref<boolean>(true);
-const isSearching = ref<boolean>(false);
-const isAssigningUser = ref<boolean>(false);
-const isRequestingPassword = ref<boolean>(false);
-const isLoggingIn = ref<boolean>(false);
-const logs = ref<string[]>([]);
-const dots = ref<string>('');
-const loggedIn = ref<boolean>(false);
-const email_supabase = ref<string>('');
-const password_supabase = ref<string>('');
-const emailExists = ref<boolean>(false);
-
+const isBooting = ref<boolean>(true)
+const isSearching = ref<boolean>(false)
+const isAssigningUser = ref<boolean>(false)
+const isRequestingPassword = ref<boolean>(false)
+const isLoggingIn = ref<boolean>(false)
+const logs = ref<string[]>([])
+const dots = ref<string>('')
+const loggedIn = ref<boolean>(false)
+const email_supabase = ref<string>('')
+const password_supabase = ref<string>('')
+const emailExists = ref<boolean>(false)
 
 const router = useRouter()
 
@@ -50,7 +49,9 @@ function handleBootComplete(): void {
   logs.value.push(`
     JARVIS LI OS
   `)
-  logs.value.push('System ready. Type "help" for a list of commands. Press "esc" to cancel any command.')
+  logs.value.push(
+    'System ready. Type "help" for a list of commands. Press "esc" to cancel any command.',
+  )
 }
 
 function handleCommand(command: string): void {
@@ -58,7 +59,8 @@ function handleCommand(command: string): void {
 
   const commandMap: Record<string, () => void> = {
     'start-game': () => startSearch(),
-    help: () => logs.value.push('Available commands: start-game, help, about, create-user, login-user'),
+    help: () =>
+      logs.value.push('Available commands: start-game, help, about, create-user, login-user'),
     about: () => logs.value.push('This is a terminal-based game interface.'),
     clear: () => logs.value.splice(0, logs.value.length),
     clr: () => logs.value.splice(0, logs.value.length),
@@ -85,7 +87,7 @@ function startUserLogin(): void {
 async function handleEmailInput(email: string): Promise<void> {
   logs.value.push(`> ${email}`)
 
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   if (re.test(email.toLowerCase()) == true) {
     email_supabase.value = email.trim()
@@ -98,13 +100,12 @@ async function handleEmailInput(email: string): Promise<void> {
       isRequestingPassword.value = true
     } else {
       logs.value.push('Email already exists. Please try again.')
-      email_supabase.value = ""
+      email_supabase.value = ''
       emailExists.value = false
       return
     }
-
   } else {
-    logs.value.push(`Invalid email format. Please try again.`);
+    logs.value.push(`Invalid email format. Please try again.`)
     return
   }
 }
@@ -127,41 +128,44 @@ function handlePasswordInput(password: string): void {
 const handleAuth = async () => {
   try {
     const { error } = isLoggingIn.value
-      ? await supabase.auth.signInWithPassword({ email: email_supabase.value, password: password_supabase.value })
-      : await supabase.auth.signUp({ email: email_supabase.value, password: password_supabase.value })
+      ? await supabase.auth.signInWithPassword({
+          email: email_supabase.value,
+          password: password_supabase.value,
+        })
+      : await supabase.auth.signUp({
+          email: email_supabase.value,
+          password: password_supabase.value,
+        })
 
     if (error) throw error
 
-    isLoggingIn.value
-      ? logs.value.push('Login successful.')
-      : logs.value.push('Signup successful.')
+    isLoggingIn.value ? logs.value.push('Login successful.') : logs.value.push('Signup successful.')
 
     isLoggingIn.value = false
     loggedIn.value = true
-  } 
-  catch (error) {
+  } catch (error) {
     if (error instanceof Error) {
       console.log(error)
       logs.value.push(`${error.message}. Please try again.`)
     }
-  } 
+  }
 }
 
 const checkIfEmailExists = async () => {
   const { data, error } = await supabase
     .from('user_emails')
-    .select('id') 
-    .ilike('email', email_supabase.value) 
+    .select('id')
+    .ilike('email', email_supabase.value)
 
   if (error) {
     console.error('Error checking email:', error)
-    return 
+    return
   }
 
   if (data.length > 0) {
     emailExists.value = true
   }
-} 
+}
 
 function clearTerminal(): void {
   logs.value.splice(0, logs.value.length)
@@ -193,7 +197,7 @@ function checkUserAuthentication(): boolean {
 
 function handleKeydown(event: KeyboardEvent): void {
   const key = event.key.toLowerCase()
-  
+
   if (key === 'escape') {
     if (isAssigningUser.value || isRequestingPassword.value) {
       logs.value.push('Operation cancelled.')

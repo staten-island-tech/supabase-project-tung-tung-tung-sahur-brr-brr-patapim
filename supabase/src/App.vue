@@ -1,4 +1,3 @@
-
 <script setup lang="js">
 import { RouterLink, RouterView } from 'vue-router'
 import Terminal from './components/Terminal.vue'
@@ -20,8 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <MainPage v-if="session" :session="session"/>
-  <Terminal v-else/>
+  <MainPage v-if="session" :session="session" />
+  <Terminal v-else />
   <RouterView />
 </template>
-
