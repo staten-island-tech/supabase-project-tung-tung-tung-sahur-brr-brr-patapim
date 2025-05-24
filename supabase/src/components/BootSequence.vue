@@ -19,7 +19,7 @@ const allMessages: string[] = [
 ]
 
 const emit = defineEmits(['boot-complete'])
-s
+
 function startBootSequence(): void {
   let index = 0
   const interval = setInterval(() => {
