@@ -139,7 +139,13 @@ const handleAuth = async () => {
 
     if (error) throw error
 
-    isLoggingIn.value ? logs.value.push('Login successful.') : logs.value.push('Signup successful.')
+    if (isLoggingIn.value) {
+      logs.value.push('Login successful.')
+    } else {
+      logs.value.push('Signup successful.')
+      logs.value.push('Account Created!') // Terminal log
+      console.log('Added to supabase') // Console log
+    }
 
     isLoggingIn.value = false
     loggedIn.value = true
