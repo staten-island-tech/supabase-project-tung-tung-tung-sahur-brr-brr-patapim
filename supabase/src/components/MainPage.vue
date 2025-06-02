@@ -19,7 +19,7 @@ async function getProfile() {
 
     const { data, error, status } = await supabase
       .from('profiles')
-      .select(`username, website, avatar_url`)
+      .select(`username`) //removed website and avatar_url Eric Chen 05/28 Reason: Made no freaking sense
       .eq('id', user.id)
       .single()
 

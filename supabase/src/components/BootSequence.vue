@@ -21,6 +21,7 @@ const allMessages: string[] = [
 const emit = defineEmits(['boot-complete'])
 
 function startBootSequence(): void {
+  playBootSound()
   let index = 0
   const interval = setInterval(() => {
     if (index < allMessages.length) {
@@ -43,6 +44,5 @@ function playBootSound(): void {
 
 onMounted(() => {
   startBootSequence()
-  playBootSound()
 })
 </script>
