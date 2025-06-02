@@ -98,9 +98,6 @@ async function handleEmailInput(email: string): Promise<void> {
       logs.value.push(`Email "${email}" accepted. Please enter a password.`)
       isAssigningUser.value = false
       isRequestingPassword.value = true
-    } else if (isLoggingIn.value) {
-      logs.value.push(`Please enter your password.`)
-      emailExists.value = true
     } else {
       logs.value.push('Email already exists. Please try again.')
       email_supabase.value = ''
