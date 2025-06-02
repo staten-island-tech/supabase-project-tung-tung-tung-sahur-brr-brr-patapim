@@ -98,9 +98,6 @@ async function handleEmailInput(email: string): Promise<void> {
       logs.value.push(`Email "${email}" accepted. Please enter a password.`)
       isAssigningUser.value = false
       isRequestingPassword.value = true
-    } else if (isLoggingIn.value) {
-      logs.value.push(`Please enter your password.`)
-      emailExists.value = true
     } else {
       logs.value.push('Email already exists. Please try again.')
       email_supabase.value = ''
@@ -142,13 +139,7 @@ const handleAuth = async () => {
 
     if (error) throw error
 
-    if (isLoggingIn.value) {
-      logs.value.push('Login successful.')
-    } else {
-      logs.value.push('Signup successful.')
-      logs.value.push('Account Created!') // Terminal log
-      console.log('Added to supabase') // Console log
-    }
+    isLoggingIn.value ? logs.value.push('Login successful.') : logs.value.push('Signup successful.')
 
     isLoggingIn.value = false
     loggedIn.value = true
@@ -176,14 +167,27 @@ const checkIfEmailExists = async () => {
   }
 }
 
+function clearTerminal(): void {
+  logs.value.splice(0, logs.value.length)
+}
+
 function startSearch(): void {
-  // temporarily disabled the search to test rerouting to the startgame page 05/24 Eric Chen
+  // router.push({ name: 'game' })
   isSearching.value = true
-  if (isLoggingIn.value) {
+  if (loggedIn.value) {
+    isSearching.value = false
     router.push({ name: 'game' })
-  } else {
-    logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
   }
+  let dotCount = 0
+  const interval = setInterval(() => {
+    dotCount = (dotCount + 1) % 4
+    dots.value = '.'.repeat(dotCount)
+  }, 500)
+  setTimeout(() => {
+    clearInterval(interval)
+    isSearching.value = false
+    logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
+  }, 3000)
 }
 
 function checkUserAuthentication(): boolean {
