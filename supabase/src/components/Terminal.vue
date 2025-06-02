@@ -28,7 +28,7 @@ import { useRouter } from 'vue-router'
 import BootSequence from './BootSequence.vue'
 import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
-import { supabase } from '../supabase.ts'
+import { supabase } from '../supabase.ts.env'
 
 const isBooting = ref<boolean>(true)
 const isSearching = ref<boolean>(false)
