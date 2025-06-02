@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 supabase.ts
+game.ts
 .env.local
 node_modules
 .DS_Store

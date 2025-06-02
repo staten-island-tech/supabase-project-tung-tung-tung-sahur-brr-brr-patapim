@@ -57,8 +57,8 @@ onMounted(() => {
             <button>
               <img src="/buttons/Start.png" alt="" class="rounded-3xl" />
             </button>
-            <button><img src="/buttons/Saves.png" alt="" class="rounded-3xl" /></button>
-            <button><img src="/buttons/Keymap.png" alt="" class="rounded-3xl" /></button>
+            <button><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
+            <button><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
           </div>
         </div>
       </div>
