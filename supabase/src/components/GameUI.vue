@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { supabase } from '../supabase.ts.env'
 import { onMounted } from 'vue'
 
 onMounted(() => {
@@ -38,6 +39,15 @@ onMounted(() => {
     })
   })
 })
+
+async function signOut() {
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  } catch (error) {
+    alert(error.message)
+  } 
+}
 </script>
 
 <template>
@@ -58,7 +68,7 @@ onMounted(() => {
               <img src="/buttons/Start.png" alt="" class="rounded-3xl" />
             </button>
             <button><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
-            <button><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
+            <button @click="signOut"><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
           </div>
         </div>
       </div>

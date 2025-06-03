@@ -137,6 +137,11 @@ const handleAuth = async () => {
           password: password_supabase.value,
         })
 
+    isLoggingIn.value = false
+    loggedIn.value = true
+
+    if (error) throw error
+
     if (isLoggingIn.value) {
       logs.value.push('Login successful.')
     } else {
@@ -144,11 +149,6 @@ const handleAuth = async () => {
       logs.value.push('Account Created!') 
       console.log('Added to supabase') 
     }
-
-    isLoggingIn.value = false
-    loggedIn.value = true
-
-    if (error) throw error
     
   } catch (error) {
     if (error instanceof Error) {
@@ -199,6 +199,7 @@ function handleKeydown(event: KeyboardEvent): void {
     if (isAssigningUser.value || isRequestingPassword.value) {
       logs.value.push('Operation cancelled.')
       isAssigningUser.value = false
+      isLoggingIn.value = false
       isRequestingPassword.value = false
       email_supabase.value = ''
       password_supabase.value = ''
