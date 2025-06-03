@@ -137,19 +137,18 @@ const handleAuth = async () => {
           password: password_supabase.value,
         })
 
-    isLoggingIn.value = false
-    loggedIn.value = true
-
-    if (error) throw error
-
     if (isLoggingIn.value) {
       logs.value.push('Login successful.')
     } else {
       logs.value.push('Signup successful.')
-      logs.value.push('Account Created!') 
-      console.log('Added to supabase') 
+      logs.value.push('Account Created!')
+      console.log('Added to supabase')
     }
-    
+
+    isLoggingIn.value = false
+    loggedIn.value = true
+
+    if (error) throw error
   } catch (error) {
     if (error instanceof Error) {
       console.log(error)
@@ -174,14 +173,27 @@ const checkIfEmailExists = async () => {
   }
 }
 
+function clearTerminal(): void {
+  logs.value.splice(0, logs.value.length)
+}
+
 function startSearch(): void {
-  // temporarily disabled the search to test rerouting to the startgame page 05/24 Eric Chen
+  // router.push({ name: 'game' })
   isSearching.value = true
-  if (isLoggingIn.value) {
+  if (loggedIn.value) {
+    isSearching.value = false
     router.push({ name: 'game' })
-  } else {
-    logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
   }
+  let dotCount = 0
+  const interval = setInterval(() => {
+    dotCount = (dotCount + 1) % 4
+    dots.value = '.'.repeat(dotCount)
+  }, 500)
+  setTimeout(() => {
+    clearInterval(interval)
+    isSearching.value = false
+    logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
+  }, 3000)
 }
 
 function checkUserAuthentication(): boolean {
