@@ -28,7 +28,7 @@ import { useRouter } from 'vue-router'
 import BootSequence from './BootSequence.vue'
 import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
-import { supabase } from '../supabase.ts'
+import { supabase } from '../supabase.ts.env'
 
 const isBooting = ref<boolean>(true)
 const isSearching = ref<boolean>(false)
@@ -94,7 +94,7 @@ async function handleEmailInput(email: string): Promise<void> {
 
     await checkIfEmailExists()
 
-    if (!emailExists.value) {
+    if (!emailExists.value || isLoggingIn) {
       logs.value.push(`Email "${email}" accepted. Please enter a password.`)
       isAssigningUser.value = false
       isRequestingPassword.value = true
@@ -137,12 +137,18 @@ const handleAuth = async () => {
           password: password_supabase.value,
         })
 
-    if (error) throw error
-
-    isLoggingIn.value ? logs.value.push('Login successful.') : logs.value.push('Signup successful.')
+    if (isLoggingIn.value) {
+      logs.value.push('Login successful.')
+    } else {
+      logs.value.push('Signup successful.')
+      logs.value.push('Account Created!')
+      console.log('Added to supabase')
+    }
 
     isLoggingIn.value = false
     loggedIn.value = true
+
+    if (error) throw error
   } catch (error) {
     if (error instanceof Error) {
       console.log(error)
