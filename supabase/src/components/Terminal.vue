@@ -30,6 +30,8 @@ import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
 import { supabase } from '../supabase.ts.env'
 
+const session = ref()
+const start = ref<boolean>(false)
 const isBooting = ref<boolean>(true)
 const isSearching = ref<boolean>(false)
 const isAssigningUser = ref<boolean>(false)
@@ -137,6 +139,11 @@ const handleAuth = async () => {
           password: password_supabase.value,
         })
 
+    isLoggingIn.value = false
+    loggedIn.value = true
+
+    if (error) throw error
+
     if (isLoggingIn.value) {
       logs.value.push('Login successful.')
     } else {
@@ -145,10 +152,6 @@ const handleAuth = async () => {
       console.log('Added to supabase')
     }
 
-    isLoggingIn.value = false
-    loggedIn.value = true
-
-    if (error) throw error
   } catch (error) {
     if (error instanceof Error) {
       console.log(error)
@@ -194,13 +197,9 @@ function startSearch(): void {
     isSearching.value = false
     logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
   }, 3000)
-}
 
-function checkUserAuthentication(): boolean {
-  if (loggedIn.value) {
-    return true
-  } else {
-    return false
+  if (session) {
+    start.value = true
   }
 }
 
@@ -225,6 +224,16 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
+})
+
+onMounted(() => {
+  supabase.auth.getSession().then(({ data }) => {
+    session.value = data.session
+  })
+
+  supabase.auth.onAuthStateChange((_, _session) => {
+    session.value = _session
+  })
 })
 </script>
 
