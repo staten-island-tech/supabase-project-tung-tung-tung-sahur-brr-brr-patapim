@@ -196,14 +196,6 @@ function startSearch(): void {
   }, 3000)
 }
 
-function checkUserAuthentication(): boolean {
-  if (loggedIn.value) {
-    return true
-  } else {
-    return false
-  }
-}
-
 function handleKeydown(event: KeyboardEvent): void {
   const key = event.key.toLowerCase()
 

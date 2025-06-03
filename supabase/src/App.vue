@@ -21,7 +21,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <MainPage v-if="session" :session="session" />
+  <!-- <MainPage v-if="session" :session="session" />
   <Terminal v-else />
-  <RouterView />
+  <RouterView /> -->
+  <ReusableModal></ReusableModal>
 </template>
