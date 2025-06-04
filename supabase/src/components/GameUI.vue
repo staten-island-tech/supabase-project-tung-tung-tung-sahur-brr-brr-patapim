@@ -1,6 +1,9 @@
 <script lang="ts" setup>
-import { supabase } from '../supabase.ts.env'
+import { supabase } from '../supabase.ts'
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 onMounted(() => {
   const tvAudio = new Audio('/audios/television.mp3')
@@ -44,9 +47,14 @@ async function signOut() {
   try {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    router.replace({ name: 'home' })
   } catch (error) {
-    alert(error.message)
-  } 
+    if (error instanceof Error) {
+      alert(error.message)
+    } else {
+      alert(String(error))
+    }
+  }
 }
 </script>
 
@@ -64,9 +72,7 @@ async function signOut() {
             <div class="eye right-eye"></div>
           </div>
           <div class="buttons-container">
-            <button>
-              <img src="/buttons/Start.png" alt="" class="rounded-3xl" />
-            </button>
+            <button @click="router.replace({name:'about'})"><img src="/buttons/Start.png" alt="" class="rounded-3xl" /></button>
             <button><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
             <button @click="signOut"><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
           </div>

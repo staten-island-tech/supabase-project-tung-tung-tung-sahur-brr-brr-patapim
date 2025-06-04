@@ -28,10 +28,10 @@ import { useRouter } from 'vue-router'
 import BootSequence from './BootSequence.vue'
 import CommandLine from './CommandLine.vue'
 import OutputLog from './OutputLog.vue'
-import { supabase } from '../supabase.ts.env'
+import { supabase } from '../supabase.ts'
 
 const session = ref()
-const start = ref<boolean>(false)
+
 const isBooting = ref<boolean>(true)
 const isSearching = ref<boolean>(false)
 const isAssigningUser = ref<boolean>(false)
@@ -139,12 +139,13 @@ const handleAuth = async () => {
           password: password_supabase.value,
         })
 
+    let oldLog = isLoggingIn.value
     isLoggingIn.value = false
     loggedIn.value = true
 
     if (error) throw error
 
-    if (isLoggingIn.value) {
+    if (oldLog) {
       logs.value.push('Login successful.')
     } else {
       logs.value.push('Signup successful.')
@@ -181,7 +182,9 @@ function clearTerminal(): void {
 }
 
 function startSearch(): void {
-  // router.push({ name: 'game' })
+  if (session.value) {
+    loggedIn.value = true
+  }
   isSearching.value = true
   if (loggedIn.value) {
     isSearching.value = false
@@ -197,10 +200,6 @@ function startSearch(): void {
     isSearching.value = false
     logs.value.push('NO LOGGED IN USER FOUND! PLEASE LOGIN')
   }, 3000)
-
-  if (session) {
-    start.value = true
-  }
 }
 
 function handleKeydown(event: KeyboardEvent): void {

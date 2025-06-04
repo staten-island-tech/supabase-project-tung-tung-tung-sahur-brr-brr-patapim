@@ -1,16 +1,12 @@
 <script setup lang="js">
 import { RouterLink, RouterView } from 'vue-router'
 import Terminal from './components/Terminal.vue'
-import { start } from './components/Terminal.vue'
 import GameUI from './components/GameUI.vue'
 import ReusableModal from './components/UI/ReusableModal.vue'
 import { onMounted, ref } from 'vue'
-import { supabase } from './supabase.ts.env'
-
+import { supabase } from './supabase.ts'
 </script>
 
 <template>
-  <GameUI v-if="start" :start="start.value" />
-  <Terminal v-else />
-  <RouterView />
+  <RouterView/>
 </template>
