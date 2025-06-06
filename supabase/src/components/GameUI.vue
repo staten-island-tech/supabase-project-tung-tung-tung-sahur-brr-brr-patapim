@@ -56,6 +56,9 @@ async function signOut() {
     }
   }
 }
+
+// include getProfile and based on if they have set a name or not, direct them to setting name component. 
+// That component will direct to the game, if already has a name, direct to game.
 </script>
 
 <template>
