@@ -1,69 +1,133 @@
 <script lang="ts" setup>
-import { supabase } from '../supabase.ts'
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted } from 'vue'
+import CanvasMap from './Game/CanvasMap.vue'
 
-const router = useRouter()
+const isGameStarted = ref(false)
+const tvAudio = ref<HTMLAudioElement | null>(null)
+const gameAudio = ref<HTMLAudioElement | null>(null)
+const hoverAudio = ref<HTMLAudioElement | null>(null)
 
-onMounted(() => {
-  const tvAudio = new Audio('/audios/television.mp3')
-
-  tvAudio.play().catch((error: unknown) => {
+// Initialize audio elements
+const initializeAudio = () => {
+  // Initialize TV boot sound
+  tvAudio.value = new Audio('/audios/television.mp3')
+  tvAudio.value.volume = 0.5
+  tvAudio.value.play().catch((error: unknown) => {
     console.error('Error playing television sound:', error)
   })
 
-  tvAudio.onended = () => {
+  tvAudio.value.onended = () => {
     console.log('Television sound ended, starting game audio...')
-    const gameAudio = new Audio('/audios/eerie.mp3') // Adjust path as needed
-    gameAudio.loop = true
-    gameAudio.play().catch((error: unknown) => {
+    // Initialize game background audio
+    gameAudio.value = new Audio('/audios/eerie.mp3')
+    gameAudio.value.loop = true
+    gameAudio.value.volume = 0.3
+    gameAudio.value.play().catch((error: unknown) => {
       console.error('Error playing game audio:', error)
     })
   }
 
-  let hoverAudio: InstanceType<typeof Audio> | null = null
+  // Initialize hover sound
+  hoverAudio.value = new Audio('/sfx/hover.mp3')
+  hoverAudio.value.volume = 0.2
+}
 
+// Add button sound effects
+const setupButtonSounds = () => {
   const buttons = document.querySelectorAll<HTMLButtonElement>('.buttons-container button')
   buttons.forEach((button) => {
     button.addEventListener('mouseenter', () => {
-      if (hoverAudio && !hoverAudio.ended) {
-        return
+      if (hoverAudio.value) {
+        hoverAudio.value.currentTime = 0
+        hoverAudio.value.play().catch((error: unknown) => {
+          console.error('Error playing hover sound:', error)
+        })
       }
-      hoverAudio = new Audio('/sfx/hover.mp3')
-      hoverAudio.play().catch((error: unknown) => {
-        console.error('Error playing hover sound:', error)
-      })
     })
     button.addEventListener('click', () => {
       const clickAudio = new Audio('/sfx/click.mp3')
+      clickAudio.volume = 0.3
       clickAudio.play().catch((error: unknown) => {
         console.error('Error playing click sound:', error)
       })
     })
   })
-})
-
-async function signOut() {
-  try {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    router.replace({ name: 'home' })
-  } catch (error) {
-    if (error instanceof Error) {
-      alert(error.message)
-    } else {
-      alert(String(error))
-    }
-  }
 }
 
-// include getProfile and based on if they have set a name or not, direct them to setting name component. 
-// That component will direct to the game, if already has a name, direct to game.
+onMounted(() => {
+  // Play TV sound immediately
+  const tvSound = new Audio('/audios/television.mp3')
+  tvSound.volume = 0.5
+  tvSound.play().catch((error: unknown) => {
+    console.error('Error playing television sound:', error)
+  })
+
+  // Initialize other audio elements
+  initializeAudio()
+  setupButtonSounds()
+})
+
+onUnmounted(() => {
+  // Clean up audio elements
+  if (tvAudio.value) {
+    tvAudio.value.pause()
+    tvAudio.value = null
+  }
+  if (gameAudio.value) {
+    gameAudio.value.pause()
+    gameAudio.value = null
+  }
+  if (hoverAudio.value) {
+    hoverAudio.value.pause()
+    hoverAudio.value = null
+  }
+})
+
+const startGame = () => {
+  isGameStarted.value = true
+  
+  // Stop eerie.mp3 if it's playing
+  if (gameAudio.value) {
+    gameAudio.value.pause()
+    gameAudio.value = null
+  }
+  
+  // Initialize audio when starting the game
+  tvAudio.value = new Audio('/audios/television.mp3')
+  tvAudio.value.volume = 0.5
+  tvAudio.value.play().catch((error: unknown) => {
+    console.error('Error playing television sound:', error)
+  })
+
+  // Initialize hover sound
+  hoverAudio.value = new Audio('/sfx/hover.mp3')
+  hoverAudio.value.volume = 0.2
+
+  // Setup button sounds
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.buttons-container button')
+  buttons.forEach((button) => {
+    button.addEventListener('mouseenter', () => {
+      if (hoverAudio.value) {
+        hoverAudio.value.currentTime = 0
+        hoverAudio.value.play().catch((error: unknown) => {
+          console.error('Error playing hover sound:', error)
+        })
+      }
+    })
+    button.addEventListener('click', () => {
+      const clickAudio = new Audio('/sfx/click.mp3')
+      clickAudio.volume = 0.3
+      clickAudio.play().catch((error: unknown) => {
+        console.error('Error playing click sound:', error)
+      })
+    })
+  })
+}
 </script>
 
 <template>
-  <div class="crt-container">
-    <div class="tv-screen">
+  <div class="crt-container" :class="{ 'game-mode': isGameStarted }">
+    <div class="tv-screen" v-if="!isGameStarted">
       <div class="scanlines"></div>
       <div class="flicker-overlay"></div>
       <div class="overlay"></div>
@@ -75,17 +139,96 @@ async function signOut() {
             <div class="eye right-eye"></div>
           </div>
           <div class="buttons-container">
-            <button @click="router.replace({name:'about'})"><img src="/buttons/Start.png" alt="" class="rounded-3xl" /></button>
+            <button @click="startGame">
+              <img src="/buttons/Start.png" alt="" class="rounded-3xl" />
+            </button>
             <button><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
             <button @click="signOut"><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
           </div>
         </div>
       </div>
     </div>
+    <div v-else class="game-view">
+      <CanvasMap />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.crt-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: #121010;
+  z-index: 1000;
+}
+
+.crt-container.game-mode {
+  background-color: #000;
+}
+
+.tv-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.game-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+}
+
+/* Scanlines effect */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 1) 50%, rgba(11, 10, 10, 0.75) 50%);
+  background-size: 100% 2px;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+/* Fixed Flicker effect */
+.flicker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(18, 16, 16, 0.1);
+  z-index: 1002;
+  pointer-events: none;
+  animation: flicker 0.5s infinite;
+}
+
+/* Color bleed effect */
+.tv-content::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.06),
+    rgba(0, 255, 0, 0.02),
+    rgba(0, 0, 255, 0.06)
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
 .background {
   background-color: black;
   background-size: cover;
