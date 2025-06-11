@@ -23,10 +23,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- <MainPage v-if="session" :session="session" />
+  <GameUI v-if="session" :session="session" />
   <Terminal v-else />
   <RouterView /> -->
   <!-- <ReusableModal></ReusableModal> -->
-  <!-- <EscapeMenu /> -->
-  <CanvasMap />
+  <!-- <EscapeMenu />
+  <!-- <CanvasMap /> -->
 </template>
