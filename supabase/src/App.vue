@@ -11,20 +11,12 @@ import { supabase } from './supabase.ts'
 </script>
 
 <template>
-<<<<<<< HEAD
-  <div class="app">
-    <MainPage v-if="session"
-    <Terminal />
-    <RouterView/>
-  </div>
-=======
   <GameUI v-if="session" :session="session" />
   <Terminal v-else />
-  <RouterView /> -->
+  <RouterView /> 
   <!-- <ReusableModal></ReusableModal> -->
-  <!-- <EscapeMenu />
+  <!-- <EscapeMenu />-->
   <!-- <CanvasMap /> -->
->>>>>>> Eric
 </template>
 
 <style>

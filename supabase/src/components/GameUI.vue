@@ -1,11 +1,21 @@
 <script lang="ts" setup>
+import { supabase } from '../supabase.ts'
 import { ref, onMounted, onUnmounted } from 'vue'
 import CanvasMap from './Game/CanvasMap.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const isGameStarted = ref(false)
 const tvAudio = ref<HTMLAudioElement | null>(null)
 const gameAudio = ref<HTMLAudioElement | null>(null)
 const hoverAudio = ref<HTMLAudioElement | null>(null)
+
+const showModal = ref(false)
+
+function toggleModal() {
+  showModal.value = !showModal.value
+}
 
 // Initialize audio elements
 const initializeAudio = () => {
@@ -52,6 +62,21 @@ const setupButtonSounds = () => {
       })
     })
   })
+}
+
+//Comment for Sectioning this Code Off (organization purposes)
+import { useGameStore } from '@/stores/game.ts'
+
+const gameFuncs = useGameStore()
+
+async function redirectTo() {
+  await gameFuncs.fetchUser()
+
+  if (gameFuncs.username == null) {
+    router.replace({ name: 'name' })
+  } else {
+    router.replace({ name: 'game' })
+  }
 }
 
 onMounted(() => {
@@ -123,6 +148,20 @@ const startGame = () => {
     })
   })
 }
+
+async function signOut() {
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    router.replace({ name: 'home' })
+  } catch (error) {
+    if (error instanceof Error) {
+      alert(error.message)
+    } else {
+      alert(String(error))
+    }
+  }
+}
 </script>
 
 <template>
@@ -141,10 +180,6 @@ const startGame = () => {
           <div class="buttons-container">
             <button @click="redirectTo"><img src="/buttons/Start.png" alt="" class="rounded-3xl" /></button>
             <button @click="toggleModal"><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
-            <button @click="startGame">
-              <img src="/buttons/Start.png" alt="" class="rounded-3xl" />
-            </button>
-            <button><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
             <button @click="signOut"><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
           </div>
 
