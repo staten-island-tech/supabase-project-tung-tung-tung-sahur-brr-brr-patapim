@@ -1,11 +1,9 @@
 <template>
   <div>
-    <RouterView/>
+    <h1>Test</h1>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { RouterView } from 'vue-router';
-
 
 </script>
