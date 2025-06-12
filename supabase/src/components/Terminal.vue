@@ -188,7 +188,7 @@ function startSearch(): void {
   isSearching.value = true
   if (loggedIn.value) {
     isSearching.value = false
-    router.push({ name: 'game' })
+    router.push({ name: 'menu' })
   }
   let dotCount = 0
   const interval = setInterval(() => {

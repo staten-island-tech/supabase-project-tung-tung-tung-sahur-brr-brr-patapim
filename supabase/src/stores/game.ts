@@ -32,6 +32,7 @@ interface StoryFlag {
 export const useGameStore = defineStore('game', () => {
   // === State ===
   const userId = ref<string | null>(null) // Logged-in user's ID
+  const username = ref<string | null>(null)
   const player = ref<Player>({
     x: 100,
     y: 100,
@@ -51,12 +52,40 @@ export const useGameStore = defineStore('game', () => {
     const { data, error } = await supabase.auth.getSession()
     if (data.session) {
       userId.value = data.session.user.id
-      await loadGameData() // Load game data for the logged-in user
+      await loadProfileData() // Load game data for the logged-in user
     } else {
       userId.value = null
     }
   }
 
+  async function loadProfileData() {
+    if (!userId.value) return
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId.value)
+      .single()
+
+    if (error) {
+      console.error('Error loading profile data:', error.message)
+    } else if (data) {
+      username.value = data.username
+    }
+  }
+
+  async function saveProfileData() {
+    if (!userId.value) return
+
+    const { error } = await supabase.from('profiles').upsert({
+      id: userId.value,
+      username: username.value,
+    })
+    
+    if (error) {
+      console.error('Error saving profile data:', error.message)
+    }
+  }
   // Save game data to Supabase
   async function saveGameData() {
     if (!userId.value) return
@@ -156,12 +185,15 @@ export const useGameStore = defineStore('game', () => {
 
   return {
     userId,
+    username,
     player,
     gameStarted,
     inventory,
     sanity,
     storyFlags,
     fetchUser,
+    loadProfileData,
+    saveProfileData,
     saveGameData,
     loadGameData,
     clearGameData,

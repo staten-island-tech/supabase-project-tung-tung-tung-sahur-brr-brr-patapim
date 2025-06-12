@@ -1,9 +1,16 @@
 <script lang="ts" setup>
 import { supabase } from '../supabase.ts'
-import { onMounted } from 'vue'
+import { onMounted,ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+const showModal = ref(false)
+
+function toggleModal() {
+  showModal.value = !showModal.value
+}
+
 
 onMounted(() => {
   const tvAudio = new Audio('/audios/television.mp3')
@@ -57,8 +64,21 @@ async function signOut() {
   }
 }
 
-// include getProfile and based on if they have set a name or not, direct them to setting name component. 
-// That component will direct to the game, if already has a name, direct to game.
+//Comment for Sectioning this Code Off (organization purposes)
+import { useGameStore } from '@/stores/game.ts'
+
+const gameFuncs = useGameStore()
+
+async function redirectTo() {
+  await gameFuncs.fetchUser()
+
+  if (gameFuncs.username == null) {
+    router.replace({ name: 'name' })
+  } else {
+    router.replace({ name: 'game' })
+  }
+}
+
 </script>
 
 <template>
@@ -75,10 +95,30 @@ async function signOut() {
             <div class="eye right-eye"></div>
           </div>
           <div class="buttons-container">
-            <button @click="router.replace({name:'about'})"><img src="/buttons/Start.png" alt="" class="rounded-3xl" /></button>
-            <button><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
+            <button @click="redirectTo"><img src="/buttons/Start.png" alt="" class="rounded-3xl" /></button>
+            <button @click="toggleModal"><img src="/buttons/Settings.png" alt="" class="rounded-3xl" /></button>
             <button @click="signOut"><img src="/buttons/Quit.png" alt="" class="rounded-3xl" /></button>
           </div>
+
+          <div v-if="showModal" class="modal-overlay">
+            <div class="modal-content">
+              <h2 class="modal-title">User Controls</h2>
+              <div class="controls-grid">
+                <span>Up</span><span>W</span>
+                <span>Down</span><span>S</span>
+                <span>Left</span><span>A</span>
+                <span>Right</span><span>D</span>
+                <span>Interact</span><span>E</span>
+                <span>Inventory</span><span>I</span>
+                <span>Confirm</span><span>Enter</span>
+                <span>Pause</span><span>Esc</span>
+              </div>
+              <button class="close-button" @click="showModal = false">Close</button>
+            </div>
+          </div>
+
+
+
         </div>
       </div>
     </div>
@@ -347,5 +387,58 @@ async function signOut() {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 1001;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; justify-content: center; align-items: center;
+  z-index: 2000; padding: 1rem; box-sizing: border-box;
+}
+
+.modal-content {
+  background:linear-gradient(180deg, #0f1f0f, #101a10);
+  color: #00ff00;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 100%; max-width: 500px;
+  max-height: 90vh; overflow-y: auto;
+  font-family: monospace;
+  font-size: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #00ff00;
+}
+
+.close-button {
+  margin-top: 2rem;
+  background: transparent; border: none;
+  color: #00ff00; font-size: 1.2rem; cursor: pointer;
+  align-self: center; padding: 0.5rem 1.5rem;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 1rem;
+  column-gap: 2rem;
+  width: 100%;
+  text-align: left;
+}
+
+.controls-grid span {
+  color: #00ff00;
+}
+
+.controls-grid span:nth-child(even) {
+  text-align: right;
 }
 </style>

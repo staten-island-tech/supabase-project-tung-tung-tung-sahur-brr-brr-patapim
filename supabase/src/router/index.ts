@@ -11,15 +11,20 @@ const router = createRouter({
       component: () => import('../components/Terminal.vue'),
     },
     {
-      path: '/about',
-      name: 'about',
-      component: () => import('../components/MainPage.vue'),
+      path: '/name',
+      name: 'name',
+      component: () => import('../components/EnterName.vue'),
     },
     {
-      path: '/game',
-      name: 'game',
+      path: '/menu',
+      name: 'menu',
       component: () => import('../components/GameUI.vue'),
     },
+    {
+      path:'/game',
+      name: 'game',
+      component: () => import('../components/TestComponent.vue')
+    }
   ],
 })
 
