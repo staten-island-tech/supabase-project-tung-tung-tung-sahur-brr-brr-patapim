@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { supabase } from '../supabase.ts'
 import { ref, onMounted, onUnmounted } from 'vue'
-import CanvasMap from './Game/CanvasMap.vue'
+import BoyRoom from './Game/BoyRoom.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -206,7 +206,7 @@ async function signOut() {
       </div>
     </div>
     <div v-else class="game-view">
-      <CanvasMap />
+      <BoyRoom />
     </div>
   </div>
 </template>

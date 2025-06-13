@@ -23,15 +23,7 @@ const router = createRouter({
     {
       path:'/game',
       name: 'game',
-      component: () => import('../components/TestComponent.vue'),
-      children: [
-      {
-        path: 'test1', // becomes /game/placeholdernames
-        name: 'test1',
-        component: () => import('../components/Test1.vue'),
-      },
-    // You can add more child routes here
-  ],
+      component: () => import('../components/Game/BoyRoom.vue'),
     }
   ],
 })
