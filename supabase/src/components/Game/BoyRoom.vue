@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseMap from './BaseMap.vue'
+import EscapeMenu from '../UI/EscapeMenu.vue'
 
 const emit = defineEmits<{
   (e: 'changeMap', map: string): void
@@ -44,8 +45,26 @@ const mapConfig = {
 </script>
 
 <template>
-  <BaseMap v-bind="mapConfig" @changeMap="(map) => {
-    console.log('[BoyRoom] Received changeMap event:', map)
-    emit('changeMap', map)
-  }" />
-</template> 
+  <div class="game-container">
+    <BaseMap v-bind="mapConfig" @changeMap="(map) => {
+      console.log('[BoyRoom] Received changeMap event:', map)
+      emit('changeMap', map)
+    }" />
+    <EscapeMenu />
+  </div>
+</template>
+
+<style scoped>
+.game-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  overflow: hidden;
+}
+</style> 
