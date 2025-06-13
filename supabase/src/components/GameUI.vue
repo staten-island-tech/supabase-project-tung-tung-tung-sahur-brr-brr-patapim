@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { supabase } from '../supabase.ts'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import BoyRoom from './Game/BoyRoom.vue'
+import BoyBathroom from './Game/BoyBathroom.vue'
+import HallWay from './Game/HallWay.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -12,6 +14,14 @@ const gameAudio = ref<HTMLAudioElement | null>(null)
 const hoverAudio = ref<HTMLAudioElement | null>(null)
 
 const showModal = ref(false)
+
+const mapComponents = {
+  BoyRoom,
+  BoyBathroom,
+  HallWay
+}
+const currentMap = ref('BoyRoom')
+const currentMapComponent = computed(() => mapComponents[currentMap.value])
 
 function toggleModal() {
   showModal.value = !showModal.value
@@ -162,6 +172,10 @@ async function signOut() {
     }
   }
 }
+
+function handleMapChange(target) {
+  if (mapComponents[target]) currentMap.value = target
+}
 </script>
 
 <template>
@@ -206,7 +220,7 @@ async function signOut() {
       </div>
     </div>
     <div v-else class="game-view">
-      <BoyRoom />
+      <component :is="currentMapComponent" @changeMap="handleMapChange" />
     </div>
   </div>
 </template>

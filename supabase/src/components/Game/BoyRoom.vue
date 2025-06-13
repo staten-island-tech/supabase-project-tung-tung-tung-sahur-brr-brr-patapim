@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import BaseMap from './BaseMap.vue'
 
+const emit = defineEmits<{
+  (e: 'changeMap', map: string): void
+}>()
+
 // Map-specific configuration
 const mapConfig = {
   mapWidth: 8,
@@ -40,5 +44,8 @@ const mapConfig = {
 </script>
 
 <template>
-  <BaseMap v-bind="mapConfig" />
+  <BaseMap v-bind="mapConfig" @changeMap="(map) => {
+    console.log('[BoyRoom] Received changeMap event:', map)
+    emit('changeMap', map)
+  }" />
 </template> 

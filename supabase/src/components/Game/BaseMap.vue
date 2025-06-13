@@ -44,6 +44,10 @@ const animationFrameId = ref<number | null>(null) // For tracking the animation 
 const showDialogue = ref(false)
 const currentInteractable = ref('')
 
+const emit = defineEmits<{
+  (e: 'changeMap', map: string): void
+}>()
+
 // Function to cut the tileset into individual tiles
 const cutTilesetIntoTiles = (image: HTMLImageElement) => {
   const tempCanvas = document.createElement('canvas')
@@ -332,6 +336,13 @@ onUnmounted(() => {
       :is-visible="showDialogue"
       :item-name="currentInteractable"
       :on-close="() => showDialogue = false"
+      @action="(actionId, itemName) => {
+        console.log('[BaseMap] Received action:', actionId, 'for item:', itemName)
+        if (actionId === 'enter' && itemName === 'A bathroom door') {
+          console.log('[BaseMap] Emitting changeMap event')
+          emit('changeMap', 'BoyBathroom')
+        }
+      }"
     />
   </div>
 </template>
