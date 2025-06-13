@@ -1,28 +1,111 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 // Type definitions
+type ActionType = 'enter' | 'search' | 'leave' | 'rest' | 'take' | 'tryOpen'
+type ActionButtonType = 'primary' | 'secondary'
+
+interface ItemAction {
+  id: ActionType
+  label: string
+  type: ActionButtonType
+  available: boolean
+}
+
 interface ItemDescription {
   description: string
   searchable: boolean
   actions: ItemAction[]
 }
 
-interface ItemAction {
-  id: string
-  label: string
-  type: 'primary' | 'secondary'
-  available: boolean
-}
-
-type ItemType = 'closet' | 'bookshelf' | 'scrolls' | 'gold' | 'bed' | 'extinguisher' | 'pot' | 'barrel'
-
-// Props with type safety
-const props = defineProps<{
+interface DialogueBoxProps {
   isVisible: boolean
   itemName: string
   onClose: () => void
+}
+
+// Props with type safety
+const props = defineProps<DialogueBoxProps>()
+
+const emit = defineEmits<{
+  (e: 'action', actionId: ActionType, itemName: string): void
 }>()
+
+// Typewriter effect state
+const displayText = ref('')
+const typingAudio = ref<HTMLAudioElement | null>(null)
+const isTyping = ref(false)
+const currentTypeInterval = ref<number | null>(null)
+const canInteract = ref(true)
+
+// Watch for changes in itemName to trigger typewriter effect
+watch(() => props.itemName, (newItemName) => {
+  if (newItemName && props.isVisible) {
+    startTypewriterEffect(itemDescriptions[newItemName]?.description || '')
+  }
+}, { immediate: true })
+
+// Watch for visibility changes
+watch(() => props.isVisible, (isVisible) => {
+  if (isVisible && props.itemName) {
+    startTypewriterEffect(itemDescriptions[props.itemName]?.description || '')
+  } else {
+    stopTypewriterEffect()
+  }
+})
+
+// Typewriter effect functions
+const startTypewriterEffect = (text: string) => {
+  // Clear any existing typing
+  stopTypewriterEffect()
+  
+  displayText.value = ''
+  isTyping.value = true
+  canInteract.value = false
+  
+  // Initialize typing sound
+  if (!typingAudio.value) {
+    typingAudio.value = new Audio('/sfx/typing.mp3')
+    typingAudio.value.loop = true
+    typingAudio.value.volume = 0.3
+  }
+  
+  // Start playing typing sound
+  typingAudio.value.play().catch(error => {
+    console.error('Error playing typing sound:', error)
+  })
+  
+  let currentIndex = 0
+  currentTypeInterval.value = window.setInterval(() => {
+    if (currentIndex < text.length) {
+      displayText.value += text[currentIndex]
+      currentIndex++
+    } else {
+      clearInterval(currentTypeInterval.value!)
+      currentTypeInterval.value = null
+      isTyping.value = false
+      canInteract.value = true
+      // Stop typing sound when done
+      if (typingAudio.value) {
+        typingAudio.value.pause()
+        typingAudio.value.currentTime = 0
+      }
+    }
+  }, 50) // Adjust speed here (lower = faster)
+}
+
+const stopTypewriterEffect = () => {
+  if (currentTypeInterval.value) {
+    clearInterval(currentTypeInterval.value)
+    currentTypeInterval.value = null
+  }
+  if (typingAudio.value) {
+    typingAudio.value.pause()
+    typingAudio.value.currentTime = 0
+  }
+  isTyping.value = false
+  canInteract.value = true
+}
 
 // Item descriptions with type safety
 const itemDescriptions: Record<string, ItemDescription> = {
@@ -98,8 +181,8 @@ const itemDescriptions: Record<string, ItemDescription> = {
       { id: 'leave', label: 'Leave', type: 'secondary', available: true }
     ]
   },
-  'The front door': {
-    description: 'The main entrance to the house. It seems to be locked from the outside.',
+  'The hallway door': {
+    description: 'The door leading to the hallway. It seems to be locked from the outside.',
     searchable: false,
     actions: [
       { id: 'tryOpen', label: 'Try to Open', type: 'primary', available: true },
@@ -109,7 +192,9 @@ const itemDescriptions: Record<string, ItemDescription> = {
 }
 
 // Type-safe action handler
-const handleAction = (actionId: string): void => {
+const handleAction = (actionId: ActionType): void => {
+  if (!canInteract.value) return // Prevent interaction while typing
+  
   const item = itemDescriptions[props.itemName]
   if (!item) {
     console.error(`No description found for item: ${props.itemName}`)
@@ -128,6 +213,7 @@ const handleAction = (actionId: string): void => {
   }
 
   console.log(`Action "${actionId}" on ${props.itemName}`)
+  emit('action', actionId, props.itemName)
   
   switch (actionId) {
     case 'leave':
@@ -148,10 +234,16 @@ const handleAction = (actionId: string): void => {
     case 'tryOpen':
       console.log(`Trying to open ${props.itemName}...`)
       break
-    default:
-      console.log(`Unknown action: ${actionId}`)
   }
 }
+
+// Cleanup on unmount
+onMounted(() => {
+  if (typingAudio.value) {
+    typingAudio.value.pause()
+    typingAudio.value = null
+  }
+})
 </script>
 
 <template>
@@ -159,20 +251,20 @@ const handleAction = (actionId: string): void => {
     <div class="dialogue-box">
       <div class="dialogue-header">
         <h3>{{ itemName }}</h3>
-        <button @click="onClose" class="close-button">×</button>
+        <button @click="onClose" class="close-button" :disabled="!canInteract">×</button>
       </div>
       
       <div class="dialogue-content">
-        <p>{{ itemDescriptions[itemName]?.description }}</p>
+        <p>{{ displayText }}<span v-if="isTyping" class="cursor">|</span></p>
         
-        <div class="action-buttons">
+        <div class="action-buttons" v-if="!isTyping">
           <button 
             v-for="action in itemDescriptions[itemName]?.actions"
             :key="action.id"
             @click="handleAction(action.id)"
             class="action-button"
             :class="action.type"
-            :disabled="!action.available"
+            :disabled="!action.available || !canInteract"
           >
             {{ action.label }}
           </button>
@@ -184,12 +276,14 @@ const handleAction = (actionId: string): void => {
 
 <style scoped>
 .dialogue-popup {
-  position: absolute;
-  top: 50%;
+  position: fixed;
+  bottom: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 1000;
   pointer-events: auto;
+  width: 60%;
+  max-width: 600px;
 }
 
 .dialogue-box {
@@ -197,9 +291,10 @@ const handleAction = (actionId: string): void => {
   border: 2px solid #444;
   border-radius: 8px;
   padding: 15px;
-  width: 300px;
   color: #fff;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  image-rendering: pixelated;
 }
 
 .dialogue-header {
@@ -207,14 +302,16 @@ const handleAction = (actionId: string): void => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-  border-bottom: 1px solid #444;
-  padding-bottom: 5px;
+  border-bottom: 2px solid #444;
+  padding-bottom: 8px;
 }
 
 .dialogue-header h3 {
   margin: 0;
   color: #fff;
-  font-size: 1.1em;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .close-button {
@@ -225,6 +322,7 @@ const handleAction = (actionId: string): void => {
   cursor: pointer;
   padding: 0 5px;
   line-height: 1;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
 }
 
 .close-button:hover {
@@ -232,30 +330,35 @@ const handleAction = (actionId: string): void => {
 }
 
 .dialogue-content {
-  margin-top: 5px;
+  margin-top: 8px;
 }
 
 .dialogue-content p {
   margin: 0 0 15px 0;
-  font-size: 0.9em;
+  font-size: 0.8em;
   line-height: 1.4;
+  letter-spacing: 0.5px;
 }
 
 .action-buttons {
   display: flex;
   gap: 10px;
   justify-content: center;
+  margin-top: 15px;
 }
 
 .action-button {
   padding: 8px 16px;
-  border: none;
+  border: 2px solid #444;
   border-radius: 4px;
   color: #fff;
   cursor: pointer;
-  font-size: 0.9em;
-  min-width: 80px;
+  font-size: 0.8em;
+  min-width: 100px;
   transition: all 0.2s ease;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .action-button.primary {
@@ -264,6 +367,7 @@ const handleAction = (actionId: string): void => {
 
 .action-button.primary:hover {
   background-color: #2b6cb0;
+  transform: translateY(-2px);
 }
 
 .action-button.secondary {
@@ -272,15 +376,36 @@ const handleAction = (actionId: string): void => {
 
 .action-button.secondary:hover {
   background-color: #2d3748;
+  transform: translateY(-2px);
 }
 
 .action-button:disabled {
   background-color: #2d3748;
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 .action-button:active {
   transform: scale(0.95);
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: #fff;
+  margin-left: 2px;
+  animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.close-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
