@@ -2,26 +2,33 @@
 import { ref, onMounted, watch } from 'vue'
 
 // Type definitions
+type ActionType = 'enter' | 'search' | 'leave' | 'rest' | 'take' | 'tryOpen'
+type ActionButtonType = 'primary' | 'secondary'
+
+interface ItemAction {
+  id: ActionType
+  label: string
+  type: ActionButtonType
+  available: boolean
+}
+
 interface ItemDescription {
   description: string
   searchable: boolean
   actions: ItemAction[]
 }
 
-interface ItemAction {
-  id: string
-  label: string
-  type: 'primary' | 'secondary'
-  available: boolean
-}
-
-type ItemType = 'closet' | 'bookshelf' | 'scrolls' | 'gold' | 'bed' | 'extinguisher' | 'pot' | 'barrel'
-
-// Props with type safety
-const props = defineProps<{
+interface DialogueBoxProps {
   isVisible: boolean
   itemName: string
   onClose: () => void
+}
+
+// Props with type safety
+const props = defineProps<DialogueBoxProps>()
+
+const emit = defineEmits<{
+  (e: 'action', actionId: ActionType, itemName: string): void
 }>()
 
 // Typewriter effect state
@@ -185,7 +192,7 @@ const itemDescriptions: Record<string, ItemDescription> = {
 }
 
 // Type-safe action handler
-const handleAction = (actionId: string): void => {
+const handleAction = (actionId: ActionType): void => {
   if (!canInteract.value) return // Prevent interaction while typing
   
   const item = itemDescriptions[props.itemName]
@@ -206,6 +213,7 @@ const handleAction = (actionId: string): void => {
   }
 
   console.log(`Action "${actionId}" on ${props.itemName}`)
+  emit('action', actionId, props.itemName)
   
   switch (actionId) {
     case 'leave':
@@ -226,8 +234,6 @@ const handleAction = (actionId: string): void => {
     case 'tryOpen':
       console.log(`Trying to open ${props.itemName}...`)
       break
-    default:
-      console.log(`Unknown action: ${actionId}`)
   }
 }
 

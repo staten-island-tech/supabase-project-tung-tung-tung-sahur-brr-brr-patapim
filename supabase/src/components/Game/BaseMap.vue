@@ -2,25 +2,34 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import DialogueBox from './DialogueBox.vue'
 
-// Props that each map will need to provide
-const props = defineProps<{
+// Type definitions
+interface MapConfig {
   mapWidth: number
   mapHeight: number
   tileSize: number
   collisionMap: number[]
   tilesetPath: string
-  interactables: {
-    [key: number]: string
-  }
-  initialPlayerPosition?: { x: number, y: number } // Optional initial player position
-}>()
+  interactables: Record<number, string>
+  initialPlayerPosition?: { x: number, y: number }
+}
+
+type Direction = 'up' | 'down' | 'left' | 'right'
+type ActionType = 'enter' | 'search' | 'leave' | 'rest' | 'take' | 'tryOpen'
+
+interface ActionEvent {
+  actionId: ActionType
+  itemName: string
+}
+
+// Props that each map will need to provide
+const props = defineProps<MapConfig>()
 
 // Constants
 const TILE_SIZE = props.tileSize
 const MAP_WIDTH = props.mapWidth
 const MAP_HEIGHT = props.mapHeight
 const SPRITE_SIZE = 80 // Size of each sprite frame (320/4 frames)
-const ANIMATION_SPEED = 125 // Milliseconds between frame changes (changed from 1000 to 200)
+const ANIMATION_SPEED = 125 // Milliseconds between frame changes
 const SPRITE_SCALE = 4 // Increased from 3 to 4 for a bigger sprite
 
 // Game state
@@ -34,7 +43,7 @@ const tiles = ref<ImageData[]>([])
 const playerTile = ref(props.initialPlayerPosition 
   ? props.initialPlayerPosition.y * MAP_WIDTH + props.initialPlayerPosition.x 
   : 37) // Default to tile 37 if no initial position provided
-const playerDirection = ref('down') // Track which way the player is facing
+const playerDirection = ref<Direction>('down') // Track which way the player is facing
 const currentFrame = ref(0) // Current animation frame
 const lastFrameTime = ref(0) // For animation timing
 const morningAudio = ref<HTMLAudioElement | null>(null)
@@ -209,14 +218,14 @@ const drawMap = () => {
 }
 
 // Handle keyboard input
-const handleKeyDown = (event: KeyboardEvent) => {
+const handleKeyDown = (event: KeyboardEvent): void => {
   if (event.key === ' ') {
     // Handle interaction
     const playerX = playerTile.value % MAP_WIDTH
     const playerY = Math.floor(playerTile.value / MAP_WIDTH)
     
     // Check tiles in 1 tile radius (up, down, left, right)
-    const adjacentTiles = [
+    const adjacentTiles: number[] = [
       playerTile.value - MAP_WIDTH, // up
       playerTile.value + MAP_WIDTH, // down
       playerTile.value - 1,         // left
@@ -248,24 +257,27 @@ const handleKeyDown = (event: KeyboardEvent) => {
   const currentY = Math.floor(playerTile.value / MAP_WIDTH)
   let newX = currentX
   let newY = currentY
+  let newDirection: Direction = playerDirection.value
 
   switch (event.key) {
     case 'ArrowUp':
       newY = currentY - 1
-      playerDirection.value = 'up'
+      newDirection = 'up'
       break
     case 'ArrowDown':
       newY = currentY + 1
-      playerDirection.value = 'down'
+      newDirection = 'down'
       break
     case 'ArrowLeft':
       newX = currentX - 1
-      playerDirection.value = 'left'
+      newDirection = 'left'
       break
     case 'ArrowRight':
       newX = currentX + 1
-      playerDirection.value = 'right'
+      newDirection = 'right'
       break
+    default:
+      return // Ignore other keys
   }
 
   // Calculate new tile index
@@ -276,6 +288,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
       newY >= 0 && newY < MAP_HEIGHT && 
       props.collisionMap[newTile] === 0) {
     playerTile.value = newTile
+    playerDirection.value = newDirection
     drawMap()
   }
 }
@@ -336,7 +349,7 @@ onUnmounted(() => {
       :is-visible="showDialogue"
       :item-name="currentInteractable"
       :on-close="() => showDialogue = false"
-      @action="(actionId, itemName) => {
+      @action="(actionId: ActionType, itemName: string) => {
         console.log('[BaseMap] Received action:', actionId, 'for item:', itemName)
         if (actionId === 'enter' && itemName === 'A bathroom door') {
           console.log('[BaseMap] Emitting changeMap event')
