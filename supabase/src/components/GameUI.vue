@@ -191,7 +191,7 @@ async function signOut() {
                 <span>Down</span><span>S</span>
                 <span>Left</span><span>A</span>
                 <span>Right</span><span>D</span>
-                <span>Interact</span><span>E</span>
+                <span>Interact</span><span>Space</span>
                 <span>Inventory</span><span>I</span>
                 <span>Confirm</span><span>Enter</span>
                 <span>Pause</span><span>Esc</span>
