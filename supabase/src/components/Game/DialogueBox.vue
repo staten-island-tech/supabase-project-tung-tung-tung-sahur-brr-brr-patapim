@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
-const gameFuncs = useGameStore()
+import { useRouter } from 'vue-router'
 
-await gameFuncs.fetchUser()
-await gameFuncs.fetchMapData()
 // Type definitions
 type ActionType = 'enter' | 'search' | 'leave' | 'rest' | 'take' | 'tryOpen'
 type ActionButtonType = 'primary' | 'secondary'
@@ -30,6 +28,8 @@ interface DialogueBoxProps {
 
 // Props with type safety
 const props = defineProps<DialogueBoxProps>()
+const router = useRouter()
+const gameStore = useGameStore()
 
 const emit = defineEmits<{
   (e: 'action', actionId: ActionType, itemName: string): void
@@ -42,8 +42,74 @@ const isTyping = ref(false)
 const currentTypeInterval = ref<number | null>(null)
 const canInteract = ref(true)
 
-// Track searched items so searching only happens once per item
-const searchedItems = ref<Set<string>>(new Set())
+// Watch for changes in itemName to trigger typewriter effect
+watch(() => props.itemName, (newItemName) => {
+  if (newItemName && props.isVisible) {
+    startTypewriterEffect(itemDescriptions[newItemName]?.description || '')
+  }
+}, { immediate: true })
+
+// Watch for visibility changes
+watch(() => props.isVisible, (isVisible) => {
+  if (isVisible && props.itemName) {
+    startTypewriterEffect(itemDescriptions[props.itemName]?.description || '')
+  } else {
+    stopTypewriterEffect()
+  }
+})
+
+// Typewriter effect functions
+const startTypewriterEffect = (text: string) => {
+  // Clear any existing typing
+  stopTypewriterEffect()
+  
+  displayText.value = ''
+  isTyping.value = true
+  canInteract.value = false
+  
+  // Initialize typing sound
+  if (!typingAudio.value) {
+    typingAudio.value = new Audio('/sfx/typing.mp3')
+    typingAudio.value.loop = true
+    typingAudio.value.volume = 0.3
+  }
+  
+  // Start playing typing sound
+  typingAudio.value.play().catch(error => {
+    console.error('Error playing typing sound:', error)
+  })
+  
+  let currentIndex = 0
+  currentTypeInterval.value = window.setInterval(() => {
+    if (currentIndex < text.length) {
+      displayText.value += text[currentIndex]
+      currentIndex++
+    } else {
+      clearInterval(currentTypeInterval.value!)
+      currentTypeInterval.value = null
+      isTyping.value = false
+      canInteract.value = true
+      // Stop typing sound when done
+      if (typingAudio.value) {
+        typingAudio.value.pause()
+        typingAudio.value.currentTime = 0
+      }
+    }
+  }, 50) // Adjust speed here (lower = faster)
+}
+
+const stopTypewriterEffect = () => {
+  if (currentTypeInterval.value) {
+    clearInterval(currentTypeInterval.value)
+    currentTypeInterval.value = null
+  }
+  if (typingAudio.value) {
+    typingAudio.value.pause()
+    typingAudio.value.currentTime = 0
+  }
+  isTyping.value = false
+  canInteract.value = true
+}
 
 // Item descriptions with type safety
 const itemDescriptions: Record<string, ItemDescription> = {
@@ -87,14 +153,7 @@ const itemDescriptions: Record<string, ItemDescription> = {
       { id: 'leave', label: 'Leave', type: 'secondary', available: true }
     ]
   },
-  'A fire extinguisher': {
-    description: 'A red fire extinguisher mounted on the wall. Better keep it handy.',
-    searchable: false,
-    actions: [
-      { id: 'take', label: 'Take', type: 'primary', available: true },
-      { id: 'leave', label: 'Leave', type: 'secondary', available: true }
-    ]
-  },
+
   'A cracked pot': {
     description: 'An old ceramic pot with cracks. It might break if handled roughly.',
     searchable: true,
@@ -129,162 +188,13 @@ const itemDescriptions: Record<string, ItemDescription> = {
   }
 }
 
-// Create a computed version of the item description with disabled search if already searched
-const computedItemDescription = computed(() => {
-  if (!props.itemName) return null
-  const base = itemDescriptions[props.itemName]
-  if (!base) return null
-
-  // Clone actions, disable search if already searched
-  const clonedActions = base.actions.map(action => {
-    if (action.id === 'search' && searchedItems.value.has(props.itemName)) {
-      return { ...action, available: false }
-    }
-    return action
-  })
-
-  return {
-    ...base,
-    actions: clonedActions
-  }
-})
-
-// Watch for changes in itemName or visibility to trigger typewriter effect
-watch(
-  () => props.itemName,
-  (newItemName) => {
-    if (props.isVisible && newItemName) {
-      startTypewriterEffect(itemDescriptions[newItemName]?.description || '')
-    } else {
-      stopTypewriterEffect()
-    }
-  },
-  { immediate: true }
-)
-
-
-// Typewriter effect functions
-const startTypewriterEffect = (text: string) => {
-  stopTypewriterEffect()
-
-  displayText.value = ''
-  isTyping.value = true
-  canInteract.value = false
-
-  if (!typingAudio.value) {
-    typingAudio.value = new Audio('/sfx/typing.mp3')
-    typingAudio.value.loop = true
-    typingAudio.value.volume = 0.3
-  }
-
-  typingAudio.value.play().catch((error) => {
-    console.error('Error playing typing sound:', error)
-  })
-
-  let currentIndex = 0
-  currentTypeInterval.value = window.setInterval(() => {
-    if (currentIndex < text.length) {
-      displayText.value += text[currentIndex]
-      currentIndex++
-    } else {
-      clearInterval(currentTypeInterval.value!)
-      currentTypeInterval.value = null
-      isTyping.value = false
-      canInteract.value = true
-
-      if (typingAudio.value) {
-        typingAudio.value.pause()
-        typingAudio.value.currentTime = 0
-      }
-    }
-  }, 50)
-}
-
-const stopTypewriterEffect = () => {
-  if (currentTypeInterval.value) {
-    clearInterval(currentTypeInterval.value)
-    currentTypeInterval.value = null
-  }
-  if (typingAudio.value) {
-    typingAudio.value.pause()
-    typingAudio.value.currentTime = 0
-  }
-  isTyping.value = false
-  canInteract.value = true
-}
-
-// Define action handlers for unique events per item and action
-const actionHandlers: Record<string, Partial<Record<ActionType, () => void>>> = {
-  'A closet': {
-    search: () => {
-      console.log('You rummage through the closet and find a rusty key.')
-    },
-    leave: () => {
-      props.onClose()
-    }
-  },
-  'A bookshelf': {
-    search: () => {
-      console.log('You find an old diary hidden behind the books.')
-    },
-    leave: () => {
-      props.onClose()
-    }
-  },
-  'A pouch of golds': {
-    search: () => {
-      console.log('You open the pouch and find some gold coins inside.')
-    },
-    leave: () => {
-      props.onClose()
-    }
-  },
-  'A bed': {
-    rest: () => {
-      console.log('You take a short rest and feel refreshed.')
-    },
-    leave: () => {
-      props.onClose()
-    }
-  },
-  'A fire extinguisher': {
-    take: () => {
-      console.log('You take the fire extinguisher with you.')
-      gameFuncs.addToInventory('Fire Extinguisher')
-      gameFuncs.changeMapData('boyroom', ['Key'], 'unlocked')
-      gameFuncs.saveProfileData()
-    },
-    leave: () => {
-      props.onClose()
-    }
-  },
-  'The hallway door': {
-    tryOpen: () => {
-      gameFuncs.loadProfileData()
-      if (gameFuncs.player.inventory)
-      console.log('The door is locked. You need a key to open it.')
-      
-    },
-    leave: () => {
-      props.onClose()
-    }
-  }
-  // Add more as needed...
-}
-
 // Type-safe action handler
 const handleAction = (actionId: ActionType): void => {
   if (!canInteract.value) return // Prevent interaction while typing
-
-  const itemName = props.itemName
-  if (!itemName) {
-    console.error('No item selected.')
-    return
-  }
-
-  const item = computedItemDescription.value
+  
+  const item = itemDescriptions[props.itemName]
   if (!item) {
-    console.error(`No description found for item: ${itemName}`)
+    console.error(`No description found for item: ${props.itemName}`)
     return
   }
 
@@ -295,26 +205,84 @@ const handleAction = (actionId: ActionType): void => {
   }
 
   if (!action.available) {
-    console.log(`Action ${actionId} is not available for ${itemName}`)
+    console.log(`Action ${actionId} is not available for ${props.itemName}`)
     return
   }
 
-  console.log(`Action "${actionId}" on ${itemName}`)
-
-  emit('action', actionId, itemName)
-
-  const itemHandler = actionHandlers[itemName]?.[actionId]
-  if (itemHandler) {
-    itemHandler()
+  console.log(`Action "${actionId}" on ${props.itemName}`)
+  
+  // Handle specific interactions
+  if (props.itemName === 'A half cracked barrel' && actionId === 'search') {
+    // Check if player already has hammer
+    const hasHammer = gameStore.player.inventory.includes('Hammer')
+    if (hasHammer) {
+      displayText.value = 'The barrel is empty.'
+      return
+    }
+    // Add Hammer to inventory
+    gameStore.addToInventory('Hammer')
+    displayText.value = 'You found a hammer inside the barrel!'
+    return
+  }
+  
+  if (props.itemName === 'A closet' && actionId === 'search') {
+    // Check if player has hammer in inventory
+    const hasHammer = gameStore.player.inventory.includes('Hammer')
+    const hasKey = gameStore.player.inventory.includes('Front Door Key')
+    
+    if (hasKey) {
+      displayText.value = 'The closet is empty.'
+      return
+    }
+    
+    if (hasHammer) {
+      displayText.value = 'You used the hammer to wedge open the closet and reveal your front door key'
+      // Add key to inventory
+      gameStore.addToInventory('Front Door Key')
+    } else {
+      displayText.value = 'The closet seems to be stuck. You need something to pry it open.'
+    }
+    return
   }
 
-  // Mark item as searched to disable future search actions
+  if (props.itemName === 'The hallway door' && actionId === 'tryOpen') {
+    const hasKey = gameStore.player.inventory.includes('Front Door Key')
+    if (hasKey) {
+      displayText.value = 'You use the front door key to unlock the door...'
+      // Wait for the message to be read before routing
+      setTimeout(() => {
+        router.push('/end')
+      }, 2000)
+    } else {
+      displayText.value = 'The door is locked. You need a key to open it.'
+    }
+    return
+  }
+  
+  // Default response for all other interactions
   if (actionId === 'search') {
-    searchedItems.value.add(itemName)
+    displayText.value = 'Nothing to be found.'
+    return
   }
-
-  if (actionId === 'leave') {
-    props.onClose()
+  
+  emit('action', actionId, props.itemName)
+  
+  switch (actionId) {
+    case 'leave':
+      props.onClose()
+      break
+    case 'rest':
+      console.log(`Resting on ${props.itemName}...`)
+      break
+    case 'take':
+      console.log(`Taking ${props.itemName}...`)
+      break
+    case 'enter':
+      console.log(`Entering ${props.itemName}...`)
+      break
+    case 'tryOpen':
+      console.log(`Trying to open ${props.itemName}...`)
+      break
   }
 }
 
@@ -328,19 +296,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="props.isVisible" class="dialogue-popup">
+  <div v-if="isVisible" class="dialogue-popup">
     <div class="dialogue-box">
       <div class="dialogue-header">
-        <h3>{{ props.itemName }}</h3>
-        <button @click="props.onClose" class="close-button" :disabled="!canInteract">×</button>
+        <h3>{{ itemName }}</h3>
+        <button @click="onClose" class="close-button" :disabled="!canInteract">×</button>
       </div>
-
+      
       <div class="dialogue-content">
         <p>{{ displayText }}<span v-if="isTyping" class="cursor">|</span></p>
-
+        
         <div class="action-buttons" v-if="!isTyping">
-          <button
-            v-for="action in computedItemDescription?.actions"
+          <button 
+            v-for="action in itemDescriptions[itemName]?.actions"
             :key="action.id"
             @click="handleAction(action.id)"
             class="action-button"
@@ -481,12 +449,8 @@ onMounted(() => {
 }
 
 @keyframes blink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .close-button:disabled {

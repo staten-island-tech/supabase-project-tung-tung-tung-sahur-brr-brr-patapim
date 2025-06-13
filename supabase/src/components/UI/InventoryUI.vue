@@ -1,51 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useGameStore } from '@/stores/game'
 
-interface InventoryItem {
-  id: number;
-  name: string;
-  description: string;
-  icon: string;
+const gameStore = useGameStore()
+const isVisible = ref(false)
+
+// Handle keyboard shortcut
+const handleKeyPress = (event: KeyboardEvent) => {
+  if (event.key.toLowerCase() === 'e') {
+    isVisible.value = !isVisible.value
+  }
 }
 
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyPress)
+})
 
-const inventoryItems = ref<InventoryItem[]>([
-  {
-    id: 1,
-    name: "Key Card",
-    description: "A security key card with level 2 access",
-    icon: "🔑"
-  },
-  {
-    id: 2,
-    name: "Flashlight",
-    description: "A reliable flashlight with fresh batteries",
-    icon: "🔦"
-  },
-  {
-    id: 3,
-    name: "First Aid Kit",
-    description: "Contains bandages and basic medical supplies",
-    icon: "🏥"
-  },
-  {
-    id: 4,
-    name: "Walkie Talkie",
-    description: "A communication device with limited range",
-    icon: "📻"
-  }
-])
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyPress)
+})
 </script>
 
 <template>
-  <div class="inventory">
+  <div v-if="isVisible" class="inventory">
     <h2>Inventory</h2>
     <div class="inventory-list">
-      <div v-for="item in inventoryItems" :key="item.id" class="inventory-item">
-        <span class="item-icon">{{ item.icon }}</span>
+      <div v-for="item in gameStore.player.inventory" :key="item" class="inventory-item">
+        <span class="item-icon">🔍</span>
         <div class="item-info">
-          <span class="item-name">{{ item.name }}</span>
-          <span class="item-description">{{ item.description }}</span>
+          <span class="item-name">{{ item }}</span>
         </div>
       </div>
     </div>

@@ -55,6 +55,7 @@ const currentInteractable = ref('')
 
 const emit = defineEmits<{
   (e: 'changeMap', map: string): void
+  (e: 'interact', itemName: string): void
 }>()
 
 // Function to cut the tileset into individual tiles
@@ -237,8 +238,7 @@ const handleKeyDown = (event: KeyboardEvent): void => {
       const interactableInfo = props.interactables[tileIndex]
       if (interactableInfo) {
         console.log(`Interacted with ${interactableInfo}`)
-        currentInteractable.value = interactableInfo
-        showDialogue.value = true
+        emit('interact', interactableInfo)
         return // Stop after first interaction
       }
     }
@@ -247,8 +247,7 @@ const handleKeyDown = (event: KeyboardEvent): void => {
     const currentTileInteractable = props.interactables[playerTile.value]
     if (currentTileInteractable) {
       console.log(`Interacting with ${currentTileInteractable}`)
-      currentInteractable.value = currentTileInteractable
-      showDialogue.value = true
+      emit('interact', currentTileInteractable)
     }
     return
   }
@@ -345,18 +344,6 @@ onUnmounted(() => {
       ref="canvasRef"
       class="game-canvas"
     ></canvas>
-    <DialogueBox
-      :is-visible="showDialogue"
-      :item-name="currentInteractable"
-      :on-close="() => showDialogue = false"
-      @action="(actionId: ActionType, itemName: string) => {
-        console.log('[BaseMap] Received action:', actionId, 'for item:', itemName)
-        if (actionId === 'enter' && itemName === 'A bathroom door') {
-          console.log('[BaseMap] Emitting changeMap event')
-          emit('changeMap', 'BoyBathroom')
-        }
-      }"
-    />
   </div>
 </template>
 

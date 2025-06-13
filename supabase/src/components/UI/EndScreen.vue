@@ -10,6 +10,7 @@ gsap.registerPlugin(ScrambleTextPlugin, CustomEase)
 const router = useRouter()
 
 const goToMenu = () => {
+  console.log('Menu button clicked')
   router.push('/menu')
 }
 
@@ -200,7 +201,7 @@ onMounted(() => {
     <div class="credits">
       <h2>By Eric and Jarvis</h2>
       <div class="note">-This project was only a demo. Pay to play the real game</div>
-      <button class="menu-button" @click="goToMenu">Go back to menu?</button>
+      <button class="menu-button hover:bg-green-500" @click="goToMenu">Go back to menu</button>
     </div>
   </div>
 </template>
@@ -220,6 +221,7 @@ onMounted(() => {
   color: #00ff00;
   font-family: 'Courier New', monospace;
   overflow: hidden;
+  z-index: 1;
 }
 
 .terminal {
@@ -421,6 +423,7 @@ onMounted(() => {
   opacity: 0;
   transform: scale(0.8);
   position: relative;
+  z-index: 1000;
 }
 
 .menu-button:hover {
@@ -453,5 +456,14 @@ onMounted(() => {
     transform: scale(1.1) translate(0);
     text-shadow: 2px 0 #00ff00, -2px 0 #ff0000;
   }
+}
+
+.credits {
+  position: relative;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 </style>    
