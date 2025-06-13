@@ -1,77 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useGameStore } from '@/stores/game';
-const gameFuncs = useGameStore()
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useGameStore } from '@/stores/game'
+const gameStore = useGameStore()
+gameStore.fetchUser()
+const isVisible = ref(false)
 
-interface InventoryItem {
-  id: number;
-  name: string;
-  description: string;
-  icon: string;
-}
-
-function handleInventoryKey(event: KeyboardEvent) {
-  if (event.key === 'i' || event.key === 'I') {
-    console.log('[Inventory] "i" key pressed while open — refreshing inventory')
-    refreshInventory()
+// Handle keyboard shortcut
+const handleKeyPress = (event: KeyboardEvent) => {
+  if (event.key.toLowerCase() === 'e') {
+    isVisible.value = !isVisible.value
   }
 }
 
-async function refreshInventory() {
-  await gameFuncs.loadProfileData()
-  if (gameFuncs.player.inventory.includes("Fire Extinguisher") && inventoryItems.value.length < 4) {
-    inventoryItems.value.push(
-      {
-        id: 4,
-        name: "Fire Extinguisher",
-        description: "A fire extinguisher to put out flames out cause a dent.",
-        icon: "🧯"
-      },
-    )
-  } else if (gameFuncs.player.inventory.includes("Key") && inventoryItems.value.length < 5) {
-    inventoryItems.value.push(
-      {
-        id: 5,
-        name: "Key",
-        description: "A key for hallways.",
-        icon: "🔑"
-      },
-    )
-  }
-}
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyPress)
+})
 
-const inventoryItems = ref<InventoryItem[]>([
-  {
-    id: 1,
-    name: "Name Tag",
-    description: "A name tag with your name on it.",
-    icon: "📛"
-  },
-  {
-    id: 2,
-    name: "Flashlight",
-    description: "A reliable flashlight with fresh batteries",
-    icon: "🔦"
-  },
-  {
-    id: 3,
-    name: "First Aid Kit",
-    description: "Contains bandages and basic medical supplies",
-    icon: "🏥"
-  },
-  
-])
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyPress)
+})
 </script>
 
 <template>
-  <div class="inventory">
+  <div v-if="isVisible" class="inventory">
     <h2>Inventory</h2>
     <div class="inventory-list">
-      <div v-for="item in inventoryItems" :key="item.id" class="inventory-item">
-        <span class="item-icon">{{ item.icon }}</span>
+      <div v-for="item in gameStore.player.inventory" :key="item" class="inventory-item">
+        <span class="item-icon">🔍</span>
         <div class="item-info">
-          <span class="item-name">{{ item.name }}</span>
-          <span class="item-description">{{ item.description }}</span>
+          <span class="item-name">{{ item }}</span>
         </div>
       </div>
     </div>

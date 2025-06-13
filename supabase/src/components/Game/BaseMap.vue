@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import DialogueBox from './DialogueBox.vue'
-import InventoryUI from '../UI/InventoryUI.vue'
+import { useGameStore } from '@/stores/game'
+
+const gameStore = useGameStore()
+gameStore.fetchUser()
 
 // Type definitions
 interface MapConfig {
@@ -11,7 +14,7 @@ interface MapConfig {
   collisionMap: number[]
   tilesetPath: string
   interactables: Record<number, string>
-  initialPlayerPosition?: { x: number, y: number }
+  initialPlayerPosition?: number | { x: number, y: number }
 }
 
 type Direction = 'up' | 'down' | 'left' | 'right'
@@ -42,9 +45,7 @@ const spriteImage = ref<HTMLImageElement | null>(null)
 const isLoaded = ref(false)
 const tiles = ref<ImageData[]>([])
 // Calculate initial player position based on props or use default
-const playerTile = ref(props.initialPlayerPosition 
-  ? props.initialPlayerPosition.y * MAP_WIDTH + props.initialPlayerPosition.x 
-  : 37) // Default to tile 37 if no initial position provided
+const playerTile = ref(gameStore.player.coordinates) // Default to tile 37 if no initial position provided
 const playerDirection = ref<Direction>('down') // Track which way the player is facing
 const currentFrame = ref(0) // Current animation frame
 const lastFrameTime = ref(0) // For animation timing
@@ -57,6 +58,7 @@ const currentInteractable = ref('')
 
 const emit = defineEmits<{
   (e: 'changeMap', map: string): void
+  (e: 'interact', itemName: string): void
 }>()
 
 // Function to cut the tileset into individual tiles
@@ -174,15 +176,27 @@ const drawMap = () => {
     switch (playerDirection.value) {
       case 'right':
         sourceY = 0 // First row (facing right)
+        gameStore.player.direction = 'east'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
       case 'down':
         sourceY = 80 // Second row (facing down)
+        gameStore.player.direction = 'south'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
       case 'up':
         sourceY = 160 // Third row (facing up)
+        gameStore.player.direction = 'north'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
       case 'left':
         sourceY = 0 // First row (facing right, will be flipped)
+        gameStore.player.direction = 'west'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
     }
     
@@ -239,8 +253,7 @@ const handleKeyDown = (event: KeyboardEvent): void => {
       const interactableInfo = props.interactables[tileIndex]
       if (interactableInfo) {
         console.log(`Interacted with ${interactableInfo}`)
-        currentInteractable.value = interactableInfo
-        showDialogue.value = true
+        emit('interact', interactableInfo)
         return // Stop after first interaction
       }
     }
@@ -249,8 +262,7 @@ const handleKeyDown = (event: KeyboardEvent): void => {
     const currentTileInteractable = props.interactables[playerTile.value]
     if (currentTileInteractable) {
       console.log(`Interacting with ${currentTileInteractable}`)
-      currentInteractable.value = currentTileInteractable
-      showDialogue.value = true
+      emit('interact', currentTileInteractable)
     }
     return
   }
@@ -354,20 +366,6 @@ onUnmounted(() => {
       ref="canvasRef"
       class="game-canvas"
     ></canvas>
-    <DialogueBox
-      :is-visible="showDialogue"
-      :item-name="currentInteractable"
-      :on-close="() => showDialogue = false"
-      @action="(actionId: ActionType, itemName: string) => {
-        console.log('[BaseMap] Received action:', actionId, 'for item:', itemName)
-        if (actionId === 'enter' && itemName === 'A bathroom door') {
-          console.log('[BaseMap] Emitting changeMap event')
-          emit('changeMap', 'BoyBathroom')
-        }
-      }"
-    />
-
-     <InventoryUI v-if="showInventory" />
   </div>
 </template>
 

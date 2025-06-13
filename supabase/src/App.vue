@@ -12,8 +12,8 @@ import InventoryUI from './components/UI/InventoryUI.vue'
 
 <template>
   <!-- <EndScreen /> -->
-  <!-- <RouterView />  -->
-  <InventoryUI />
+  <RouterView /> 
+  <!-- <InventoryUI /> -->
   <!-- <EscapeMenu /> -->
 </template>
 
