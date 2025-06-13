@@ -3,11 +3,10 @@ import BaseMap from './BaseMap.vue'
 import EscapeMenu from '../UI/EscapeMenu.vue'
 import DialogueBox from './DialogueBox.vue'
 import InventoryUI from '../UI/InventoryUI.vue'
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 
 const gameStore = useGameStore()
-gameStore.fetchUser()
 
 const emit = defineEmits<{
   (e: 'changeMap', map: string): void
@@ -28,16 +27,12 @@ const closeDialogue = () => {
 
 const handleDialogueAction = (actionId: string, itemName: string) => {
   console.log('[BoyRoom] Received action:', actionId, 'for item:', itemName)
-  
-  // Handle taking the hammer
   if (actionId === 'take' && itemName === 'Hammer') {
-    // Remove barrel from interactables
     const barrelTile = Object.entries(interactables).find(([_, value]) => value === 'A half cracked barrel')?.[0]
     if (barrelTile) {
       delete interactables[Number(barrelTile)]
     }
   }
-  
   if (actionId === 'enter' && itemName === 'A bathroom door') {
     console.log('[BoyRoom] Changing map to BoyBathroom')
     emit('changeMap', 'BoyBathroom')
@@ -82,6 +77,7 @@ const mapConfig = {
     return interactables
   }
 }
+
 </script>
 
 <template>

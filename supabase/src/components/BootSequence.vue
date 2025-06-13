@@ -8,7 +8,7 @@
 import { ref, onMounted, defineEmits } from 'vue'
 
 const bootMessages = ref<string[]>([])
-const isLoggedIn = ref<boolean>(false) //Additions will be made to determine whether user is logged in or not. Eric Chen 05/24
+const isLoggedIn = ref<boolean>(false) 
 const allMessages: string[] = [
   'Initializing system...',
   'Loading assets...',

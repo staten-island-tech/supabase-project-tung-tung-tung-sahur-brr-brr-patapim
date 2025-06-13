@@ -14,11 +14,9 @@ const goToMenu = () => {
   router.push('/menu')
 }
 
-// Create custom ease for more dynamic animations
 const glitchEase = CustomEase.create("glitchEase", "M0,0 C0.126,0.382 0.282,0.674 0.378,0.752 0.486,0.84 0.602,0.902 0.722,0.938 0.842,0.974 0.966,1 1,1")
 
 onMounted(() => {
-  // Initial state
   gsap.set('.end-screen', { opacity: 0, scale: 0.5, rotation: -10 })
   gsap.set('.credits', { opacity: 0, y: 50, scale: 0.8 })
   gsap.set('.glitch-text', { opacity: 0 })
@@ -27,10 +25,8 @@ onMounted(() => {
   gsap.set('.note', { opacity: 0 })
   gsap.set('.menu-button', { opacity: 0, scale: 0.8 })
 
-  // Animation sequence
   const tl = gsap.timeline()
 
-  // Terminal effect with scramble text
   tl.to('.terminal', {
     opacity: 1,
     duration: 2,
@@ -91,7 +87,6 @@ onMounted(() => {
     duration: 1,
     ease: 'power2.out'
   }, 6)
-  // Main text animation with dramatic entrance
   .to('.end-screen', {
     opacity: 1,
     scale: 1.2,
@@ -109,7 +104,6 @@ onMounted(() => {
     opacity: 1,
     duration: 0.5,
     onComplete: () => {
-      // Enhanced glitch effect
       gsap.to('.glitch-text', {
         x: '10px',
         duration: 0.05,
@@ -147,7 +141,6 @@ onMounted(() => {
     duration: 1.5,
     ease: glitchEase,
     onComplete: () => {
-      // Continuous subtle animation for credits
       gsap.to('.credits', {
         y: '5px',
         duration: 2,
@@ -155,7 +148,6 @@ onMounted(() => {
         yoyo: true,
         ease: 'sine.inOut'
       })
-      // Start typewriter effect for note
       gsap.to('.note', {
         opacity: 1,
         duration: 0.1,
@@ -163,7 +155,6 @@ onMounted(() => {
           const note = document.querySelector('.note') as HTMLElement
           if (note) {
             note.classList.add('typing')
-            // Show menu button after typing animation
             setTimeout(() => {
               gsap.to('.menu-button', {
                 opacity: 1,

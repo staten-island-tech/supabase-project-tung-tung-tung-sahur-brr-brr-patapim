@@ -17,9 +17,7 @@ function toggleModal() {
   showModal.value = !showModal.value
 }
 
-// Initialize audio elements
 const initializeAudio = () => {
-  // Initialize TV boot sound
   tvAudio.value = new Audio('/audios/television.mp3')
   tvAudio.value.volume = 0.5
   tvAudio.value.play().catch((error: unknown) => {
@@ -28,7 +26,6 @@ const initializeAudio = () => {
 
   tvAudio.value.onended = () => {
     console.log('Television sound ended, starting game audio...')
-    // Initialize game background audio
     gameAudio.value = new Audio('/audios/eerie.mp3')
     gameAudio.value.loop = true
     gameAudio.value.volume = 0.3
@@ -37,12 +34,10 @@ const initializeAudio = () => {
     })
   }
 
-  // Initialize hover sound
   hoverAudio.value = new Audio('/sfx/hover.mp3')
   hoverAudio.value.volume = 0.2
 }
 
-// Add button sound effects
 const setupButtonSounds = () => {
   const buttons = document.querySelectorAll<HTMLButtonElement>('.buttons-container button')
   buttons.forEach((button) => {
@@ -79,20 +74,17 @@ async function redirectTo() {
 }
 
 onMounted(() => {
-  // Play TV sound immediately
   const tvSound = new Audio('/audios/television.mp3')
   tvSound.volume = 0.5
   tvSound.play().catch((error: unknown) => {
     console.error('Error playing television sound:', error)
   })
 
-  // Initialize other audio elements
   initializeAudio()
   setupButtonSounds()
 })
 
 onUnmounted(() => {
-  // Clean up audio elements
   if (tvAudio.value) {
     tvAudio.value.pause()
     tvAudio.value = null
@@ -109,25 +101,21 @@ onUnmounted(() => {
 
 const startGame = () => {
   isGameStarted.value = true
-  
-  // Stop eerie.mp3 if it's playing
+
   if (gameAudio.value) {
     gameAudio.value.pause()
     gameAudio.value = null
   }
-  
-  // Initialize audio when starting the game
+
   tvAudio.value = new Audio('/audios/television.mp3')
   tvAudio.value.volume = 0.5
   tvAudio.value.play().catch((error: unknown) => {
     console.error('Error playing television sound:', error)
   })
 
-  // Initialize hover sound
   hoverAudio.value = new Audio('/sfx/hover.mp3')
   hoverAudio.value.volume = 0.2
 
-  // Setup button sounds
   const buttons = document.querySelectorAll<HTMLButtonElement>('.buttons-container button')
   buttons.forEach((button) => {
     button.addEventListener('mouseenter', () => {
@@ -191,7 +179,7 @@ async function signOut() {
                 <span>Left</span><span>A</span>
                 <span>Right</span><span>D</span>
                 <span>Interact</span><span>Space</span>
-                <span>Inventory</span><span>I</span>
+                <span>Inventory</span><span>E</span>
                 <span>Confirm</span><span>Enter</span>
                 <span>Pause</span><span>Esc</span>
               </div>
@@ -238,7 +226,6 @@ async function signOut() {
   background-color: #000;
 }
 
-/* Scanlines effect */
 .scanlines {
   position: fixed;
   top: 0;
@@ -251,7 +238,6 @@ async function signOut() {
   z-index: 1001;
 }
 
-/* Fixed Flicker effect */
 .flicker-overlay {
   position: fixed;
   top: 0;
@@ -264,7 +250,6 @@ async function signOut() {
   animation: flicker 0.5s infinite;
 }
 
-/* Color bleed effect */
 .tv-content::before {
   content: '';
   position: fixed;
@@ -352,7 +337,6 @@ async function signOut() {
   cursor: pointer;
 }
 
-/* CRT TV effect */
 .crt-container {
   position: fixed;
   top: 0;
@@ -370,7 +354,6 @@ async function signOut() {
   height: 100%;
 }
 
-/* Scanlines effect */
 .scanlines {
   position: fixed;
   top: 0;
@@ -383,7 +366,6 @@ async function signOut() {
   z-index: 1001;
 }
 
-/* Fixed Flicker effect */
 .flicker-overlay {
   position: fixed;
   top: 0;
@@ -396,7 +378,6 @@ async function signOut() {
   animation: flicker 0.5s infinite;
 }
 
-/* Color bleed effect */
 .tv-content::before {
   content: '';
   position: fixed;
@@ -414,7 +395,6 @@ async function signOut() {
   z-index: 1000;
 }
 
-/* Proper flicker animation */
 @keyframes flicker {
   0% {
     opacity: 0.9;
@@ -481,7 +461,6 @@ async function signOut() {
   }
 }
 
-/* TV turn-on animation */
 .tv-screen {
   animation: turn-on 11s linear;
   animation-fill-mode: forwards;
@@ -517,7 +496,6 @@ async function signOut() {
   }
 }
 
-/* Optional: TV border */
 .tv-screen::after {
   content: '';
   position: fixed;
@@ -532,7 +510,6 @@ async function signOut() {
   z-index: 1003;
 }
 
-/* Noise effect */
 .tv-screen::before {
   content: '';
   position: fixed;
@@ -598,3 +575,5 @@ async function signOut() {
   text-align: right;
 }
 </style>
+
+

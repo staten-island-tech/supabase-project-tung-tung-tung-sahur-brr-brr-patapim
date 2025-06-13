@@ -3,7 +3,6 @@ import { ref, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useRouter } from 'vue-router'
 
-// Type definitions
 type ActionType = 'enter' | 'search' | 'leave' | 'rest' | 'take' | 'tryOpen'
 type ActionButtonType = 'primary' | 'secondary'
 
@@ -26,31 +25,26 @@ interface DialogueBoxProps {
   onClose: () => void
 }
 
-// Props with type safety
 const props = defineProps<DialogueBoxProps>()
 const router = useRouter()
 const gameStore = useGameStore()
-gameStore.fetchUser()
 
 const emit = defineEmits<{
   (e: 'action', actionId: ActionType, itemName: string): void
 }>()
 
-// Typewriter effect state
 const displayText = ref('')
 const typingAudio = ref<HTMLAudioElement | null>(null)
 const isTyping = ref(false)
 const currentTypeInterval = ref<number | null>(null)
 const canInteract = ref(true)
 
-// Watch for changes in itemName to trigger typewriter effect
 watch(() => props.itemName, (newItemName) => {
   if (newItemName && props.isVisible) {
     startTypewriterEffect(itemDescriptions[newItemName]?.description || '')
   }
 }, { immediate: true })
 
-// Watch for visibility changes
 watch(() => props.isVisible, (isVisible) => {
   if (isVisible && props.itemName) {
     startTypewriterEffect(itemDescriptions[props.itemName]?.description || '')
@@ -59,23 +53,19 @@ watch(() => props.isVisible, (isVisible) => {
   }
 })
 
-// Typewriter effect functions
 const startTypewriterEffect = (text: string) => {
-  // Clear any existing typing
   stopTypewriterEffect()
   
   displayText.value = ''
   isTyping.value = true
   canInteract.value = false
   
-  // Initialize typing sound
   if (!typingAudio.value) {
     typingAudio.value = new Audio('/sfx/typing.mp3')
     typingAudio.value.loop = true
     typingAudio.value.volume = 0.3
   }
   
-  // Start playing typing sound
   typingAudio.value.play().catch(error => {
     console.error('Error playing typing sound:', error)
   })
@@ -90,13 +80,12 @@ const startTypewriterEffect = (text: string) => {
       currentTypeInterval.value = null
       isTyping.value = false
       canInteract.value = true
-      // Stop typing sound when done
       if (typingAudio.value) {
         typingAudio.value.pause()
         typingAudio.value.currentTime = 0
       }
     }
-  }, 50) // Adjust speed here (lower = faster)
+  }, 50)
 }
 
 const stopTypewriterEffect = () => {
@@ -112,7 +101,6 @@ const stopTypewriterEffect = () => {
   canInteract.value = true
 }
 
-// Item descriptions with type safety
 const itemDescriptions: Record<string, ItemDescription> = {
   'A closet': {
     description: 'A wooden closet. You can search it for items.',
@@ -189,9 +177,8 @@ const itemDescriptions: Record<string, ItemDescription> = {
   }
 }
 
-// Type-safe action handler
 const handleAction = (actionId: ActionType): void => {
-  if (!canInteract.value) return // Prevent interaction while typing
+  if (!canInteract.value) return
   
   const item = itemDescriptions[props.itemName]
   if (!item) {
@@ -212,15 +199,12 @@ const handleAction = (actionId: ActionType): void => {
 
   console.log(`Action "${actionId}" on ${props.itemName}`)
   
-  // Handle specific interactions
   if (props.itemName === 'A half cracked barrel' && actionId === 'search') {
-    // Check if player already has hammer
     const hasHammer = gameStore.player.inventory.includes('Hammer')
     if (hasHammer) {
       displayText.value = 'The barrel is empty.'
       return
     }
-    // Add Hammer to inventory
     gameStore.addToInventory('Hammer')
     gameStore.saveProfileData()
     displayText.value = 'You found a hammer inside the barrel!'
@@ -228,7 +212,6 @@ const handleAction = (actionId: ActionType): void => {
   }
   
   if (props.itemName === 'A closet' && actionId === 'search') {
-    // Check if player has hammer in inventory
     const hasHammer = gameStore.player.inventory.includes('Hammer')
     const hasKey = gameStore.player.inventory.includes('Front Door Key')
     
@@ -239,7 +222,6 @@ const handleAction = (actionId: ActionType): void => {
     
     if (hasHammer) {
       displayText.value = 'You used the hammer to wedge open the closet and reveal your front door key'
-      // Add key to inventory
       gameStore.addToInventory('Front Door Key')
       gameStore.saveProfileData()
     } else {
@@ -252,7 +234,6 @@ const handleAction = (actionId: ActionType): void => {
     const hasKey = gameStore.player.inventory.includes('Front Door Key')
     if (hasKey) {
       displayText.value = 'You use the front door key to unlock the door...'
-      // Wait for the message to be read before routing
       setTimeout(() => {
         router.push('/end')
       }, 2000)
@@ -262,7 +243,6 @@ const handleAction = (actionId: ActionType): void => {
     return
   }
   
-  // Default response for all other interactions
   if (actionId === 'search') {
     displayText.value = 'Nothing to be found.'
     return
@@ -289,7 +269,6 @@ const handleAction = (actionId: ActionType): void => {
   }
 }
 
-// Cleanup on unmount
 onMounted(() => {
   if (typingAudio.value) {
     typingAudio.value.pause()

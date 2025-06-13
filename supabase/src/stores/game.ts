@@ -47,7 +47,6 @@ export const useGameStore = defineStore('game', () => {
   const items = ref<string[]>([])
   const accessibility = ref<string | null>(null)
 
-
   async function fetchUser() {
     const { data, error } = await supabase.auth.getSession()
 
@@ -98,21 +97,19 @@ export const useGameStore = defineStore('game', () => {
     }
   }
   
-
   function clearProfileData() {
     userId.value = null
     player.value = { coordinates: 0, direction: 'south', map: 'boyroom', inventory: [] }
   }
 
-  // Inventory Management
   function addToInventory(item: InventoryItem) {
     player.value.inventory.push(item)
     saveProfileData() 
-  } // will need to remove it from the map at that point while player is universal.
+  }
 
   function removeFromInventory(item: InventoryItem) {
     player.value.inventory = player.value.inventory.filter(object => object != item)
-    saveProfileData() // Save changes to Supabase
+    saveProfileData()
   }
 
   async function fetchMapData(map: string) {

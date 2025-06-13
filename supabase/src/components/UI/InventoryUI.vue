@@ -5,7 +5,6 @@ const gameStore = useGameStore()
 gameStore.fetchUser()
 const isVisible = ref(false)
 
-// Handle keyboard shortcut
 const handleKeyPress = (event: KeyboardEvent) => {
   if (event.key.toLowerCase() === 'e') {
     isVisible.value = !isVisible.value
