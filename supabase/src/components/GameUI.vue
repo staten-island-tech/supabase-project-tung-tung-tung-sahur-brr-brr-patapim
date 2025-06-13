@@ -1,9 +1,7 @@
 <script lang="ts" setup>
 import { supabase } from '../supabase.ts'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import BoyRoom from './Game/BoyRoom.vue'
-import BoyBathroom from './Game/BoyBathroom.vue'
-import HallWay from './Game/HallWay.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -14,14 +12,6 @@ const gameAudio = ref<HTMLAudioElement | null>(null)
 const hoverAudio = ref<HTMLAudioElement | null>(null)
 
 const showModal = ref(false)
-
-const mapComponents = {
-  BoyRoom,
-  BoyBathroom,
-  HallWay
-}
-const currentMap = ref('BoyRoom')
-const currentMapComponent = computed(() => mapComponents[currentMap.value])
 
 function toggleModal() {
   showModal.value = !showModal.value
@@ -74,7 +64,6 @@ const setupButtonSounds = () => {
   })
 }
 
-//Comment for Sectioning this Code Off (organization purposes)
 import { useGameStore } from '@/stores/game.ts'
 
 const gameFuncs = useGameStore()
@@ -172,10 +161,6 @@ async function signOut() {
     }
   }
 }
-
-function handleMapChange(target) {
-  if (mapComponents[target]) currentMap.value = target
-}
 </script>
 
 <template>
@@ -213,14 +198,11 @@ function handleMapChange(target) {
               <button class="close-button" @click="showModal = false">Close</button>
             </div>
           </div>
-
-
-
         </div>
       </div>
     </div>
     <div v-else class="game-view">
-      <component :is="currentMapComponent" @changeMap="handleMapChange" />
+      <BoyRoom />
     </div>
   </div>
 </template>
