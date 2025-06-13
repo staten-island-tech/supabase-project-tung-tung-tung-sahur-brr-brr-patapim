@@ -22,7 +22,7 @@ const initialMapData: MapData[] = [
   { map: 'attic', items: [], accessibility: 'unlocked'},
   { map: 'atticentrance', items: [], accessibility: 'locked'},
   { map: 'boybathroom', items: [], accessibility: 'unlocked'},
-  { map: 'boyroom', items: ['Key', 'Fire Extinguisher'], accessibility: 'unlocked'},
+  { map: 'boyroom', items: [], accessibility: 'unlocked'},
   { map: 'church', items: [], accessibility: 'locked'},
   { map: 'diningroom', items: [], accessibility: 'unlocked'},
   { map: 'dungeon', items: [], accessibility: 'unlocked'},

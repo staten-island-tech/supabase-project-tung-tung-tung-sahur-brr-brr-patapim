@@ -7,6 +7,8 @@ import { ref, reactive } from 'vue'
 import { useGameStore } from '@/stores/game'
 
 const gameStore = useGameStore()
+gameStore.fetchUser()
+
 const emit = defineEmits<{
   (e: 'changeMap', map: string): void
 }>()
@@ -61,7 +63,7 @@ const mapConfig = {
   mapHeight: 12,
   tileSize: 48,
   tilesetPath: '/maps/BoyRoom.png',
-  initialPlayerPosition: { x: 5, y: 4 },
+  initialPlayerPosition: gameStore.player.coordinates,
   collisionMap: [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,

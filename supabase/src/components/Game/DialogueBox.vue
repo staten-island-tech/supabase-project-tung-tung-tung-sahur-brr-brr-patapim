@@ -30,6 +30,7 @@ interface DialogueBoxProps {
 const props = defineProps<DialogueBoxProps>()
 const router = useRouter()
 const gameStore = useGameStore()
+gameStore.fetchUser()
 
 const emit = defineEmits<{
   (e: 'action', actionId: ActionType, itemName: string): void
@@ -221,6 +222,7 @@ const handleAction = (actionId: ActionType): void => {
     }
     // Add Hammer to inventory
     gameStore.addToInventory('Hammer')
+    gameStore.saveProfileData()
     displayText.value = 'You found a hammer inside the barrel!'
     return
   }
@@ -239,6 +241,7 @@ const handleAction = (actionId: ActionType): void => {
       displayText.value = 'You used the hammer to wedge open the closet and reveal your front door key'
       // Add key to inventory
       gameStore.addToInventory('Front Door Key')
+      gameStore.saveProfileData()
     } else {
       displayText.value = 'The closet seems to be stuck. You need something to pry it open.'
     }

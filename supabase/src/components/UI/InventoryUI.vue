@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
-
 const gameStore = useGameStore()
+gameStore.fetchUser()
 const isVisible = ref(false)
 
 // Handle keyboard shortcut

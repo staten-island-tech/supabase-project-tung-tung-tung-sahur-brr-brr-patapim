@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import DialogueBox from './DialogueBox.vue'
+import { useGameStore } from '@/stores/game'
+
+const gameStore = useGameStore()
+gameStore.fetchUser()
 
 // Type definitions
 interface MapConfig {
@@ -10,7 +14,7 @@ interface MapConfig {
   collisionMap: number[]
   tilesetPath: string
   interactables: Record<number, string>
-  initialPlayerPosition?: { x: number, y: number }
+  initialPlayerPosition?: number | { x: number, y: number }
 }
 
 type Direction = 'up' | 'down' | 'left' | 'right'
@@ -40,9 +44,7 @@ const spriteImage = ref<HTMLImageElement | null>(null)
 const isLoaded = ref(false)
 const tiles = ref<ImageData[]>([])
 // Calculate initial player position based on props or use default
-const playerTile = ref(props.initialPlayerPosition 
-  ? props.initialPlayerPosition.y * MAP_WIDTH + props.initialPlayerPosition.x 
-  : 37) // Default to tile 37 if no initial position provided
+const playerTile = ref(gameStore.player.coordinates) // Default to tile 37 if no initial position provided
 const playerDirection = ref<Direction>('down') // Track which way the player is facing
 const currentFrame = ref(0) // Current animation frame
 const lastFrameTime = ref(0) // For animation timing
@@ -173,15 +175,27 @@ const drawMap = () => {
     switch (playerDirection.value) {
       case 'right':
         sourceY = 0 // First row (facing right)
+        gameStore.player.direction = 'east'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
       case 'down':
         sourceY = 80 // Second row (facing down)
+        gameStore.player.direction = 'south'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
       case 'up':
         sourceY = 160 // Third row (facing up)
+        gameStore.player.direction = 'north'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
       case 'left':
         sourceY = 0 // First row (facing right, will be flipped)
+        gameStore.player.direction = 'west'
+        gameStore.player.coordinates = playerTile.value
+        gameStore.saveProfileData()
         break
     }
     
