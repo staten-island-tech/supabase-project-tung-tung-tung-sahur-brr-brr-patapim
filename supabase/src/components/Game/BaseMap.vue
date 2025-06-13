@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import DialogueBox from './DialogueBox.vue'
+import InventoryUI from '../UI/InventoryUI.vue'
 
 // Type definitions
 interface MapConfig {
@@ -21,6 +22,7 @@ interface ActionEvent {
   itemName: string
 }
 
+const showInventory = ref(false)
 // Props that each map will need to provide
 const props = defineProps<MapConfig>()
 
@@ -259,6 +261,11 @@ const handleKeyDown = (event: KeyboardEvent): void => {
   let newY = currentY
   let newDirection: Direction = playerDirection.value
 
+  if (event.key === "i") {
+    showInventory.value = !showInventory.value
+    return
+  }
+
   switch (event.key) {
     case 'ArrowUp':
       newY = currentY - 1
@@ -337,6 +344,8 @@ onUnmounted(() => {
     cancelAnimationFrame(animationFrameId.value)
   }
 })
+
+
 </script>
 
 <template>
@@ -357,6 +366,8 @@ onUnmounted(() => {
         }
       }"
     />
+
+     <InventoryUI v-if="showInventory" />
   </div>
 </template>
 

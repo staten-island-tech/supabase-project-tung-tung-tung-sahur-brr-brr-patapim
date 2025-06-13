@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useGameStore } from '@/stores/game';
+const gameFuncs = useGameStore()
 
 interface InventoryItem {
   id: number;
@@ -8,13 +10,42 @@ interface InventoryItem {
   icon: string;
 }
 
+function handleInventoryKey(event: KeyboardEvent) {
+  if (event.key === 'i' || event.key === 'I') {
+    console.log('[Inventory] "i" key pressed while open — refreshing inventory')
+    refreshInventory()
+  }
+}
+
+async function refreshInventory() {
+  await gameFuncs.loadProfileData()
+  if (gameFuncs.player.inventory.includes("Fire Extinguisher") && inventoryItems.value.length < 4) {
+    inventoryItems.value.push(
+      {
+        id: 4,
+        name: "Fire Extinguisher",
+        description: "A fire extinguisher to put out flames out cause a dent.",
+        icon: "🧯"
+      },
+    )
+  } else if (gameFuncs.player.inventory.includes("Key") && inventoryItems.value.length < 5) {
+    inventoryItems.value.push(
+      {
+        id: 5,
+        name: "Key",
+        description: "A key for hallways.",
+        icon: "🔑"
+      },
+    )
+  }
+}
 
 const inventoryItems = ref<InventoryItem[]>([
   {
     id: 1,
-    name: "Key Card",
-    description: "A security key card with level 2 access",
-    icon: "🔑"
+    name: "Name Tag",
+    description: "A name tag with your name on it.",
+    icon: "📛"
   },
   {
     id: 2,
@@ -28,12 +59,7 @@ const inventoryItems = ref<InventoryItem[]>([
     description: "Contains bandages and basic medical supplies",
     icon: "🏥"
   },
-  {
-    id: 4,
-    name: "Walkie Talkie",
-    description: "A communication device with limited range",
-    icon: "📻"
-  }
+  
 ])
 </script>
 
