@@ -10,8 +10,8 @@ import EndScreen from './components/UI/EndScreen.vue'
 </script>
 
 <template>
-  <!-- <EndScreen /> -->
-  <RouterView /> 
+  <EndScreen />
+  <!-- <RouterView />  -->
 
   <!-- <EscapeMenu />-->
 </template>

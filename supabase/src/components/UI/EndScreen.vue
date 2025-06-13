@@ -2,12 +2,19 @@
 import { onMounted } from 'vue'
 import gsap from 'gsap'
 import { useRouter } from 'vue-router'
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
+import { CustomEase } from 'gsap/CustomEase'
+
+gsap.registerPlugin(ScrambleTextPlugin, CustomEase)
 
 const router = useRouter()
 
 const goToMenu = () => {
   router.push('/menu')
 }
+
+// Create custom ease for more dynamic animations
+const glitchEase = CustomEase.create("glitchEase", "M0,0 C0.126,0.382 0.282,0.674 0.378,0.752 0.486,0.84 0.602,0.902 0.722,0.938 0.842,0.974 0.966,1 1,1")
 
 onMounted(() => {
   // Initial state
@@ -22,24 +29,74 @@ onMounted(() => {
   // Animation sequence
   const tl = gsap.timeline()
 
-  // Terminal effect
+  // Terminal effect with scramble text
   tl.to('.terminal', {
     opacity: 1,
     duration: 2,
     ease: 'power2.in'
   })
+  .to('.line', {
+    duration: 1,
+    scrambleText: {
+      text: "> Initializing system...",
+      chars: "01",
+      speed: 0.3,
+      revealDelay: 0.5
+    },
+    ease: "none"
+  }, 0.5)
+  .to('.line:nth-child(2)', {
+    duration: 1,
+    scrambleText: {
+      text: "> Loading completion sequence...",
+      chars: "01",
+      speed: 0.3,
+      revealDelay: 0.5
+    },
+    ease: "none"
+  }, 1.5)
+  .to('.line:nth-child(3)', {
+    duration: 1,
+    scrambleText: {
+      text: "> Accessing memory banks...",
+      chars: "01",
+      speed: 0.3,
+      revealDelay: 0.5
+    },
+    ease: "none"
+  }, 2.5)
+  .to('.line:nth-child(4)', {
+    duration: 1,
+    scrambleText: {
+      text: "> Processing final data...",
+      chars: "01",
+      speed: 0.3,
+      revealDelay: 0.5
+    },
+    ease: "none"
+  }, 3.5)
+  .to('.line:nth-child(5)', {
+    duration: 1,
+    scrambleText: {
+      text: "> System ready.",
+      chars: "01",
+      speed: 0.3,
+      revealDelay: 0.5
+    },
+    ease: "none"
+  }, 4.5)
   .to('.terminal', {
     opacity: 0,
     duration: 1,
     ease: 'power2.out'
-  })
+  }, 6)
   // Main text animation with dramatic entrance
   .to('.end-screen', {
     opacity: 1,
     scale: 1.2,
     rotation: 5,
     duration: 1.5,
-    ease: 'elastic.out(1, 0.3)'
+    ease: glitchEase
   })
   .to('.end-screen', {
     scale: 1,
@@ -87,7 +144,7 @@ onMounted(() => {
     y: 0,
     scale: 1,
     duration: 1.5,
-    ease: 'back.out(1.7)',
+    ease: glitchEase,
     onComplete: () => {
       // Continuous subtle animation for credits
       gsap.to('.credits', {
@@ -111,9 +168,9 @@ onMounted(() => {
                 opacity: 1,
                 scale: 1,
                 duration: 0.5,
-                ease: 'back.out(1.7)'
+                ease: glitchEase
               })
-            }, 3000) // Wait for typing animation to complete
+            }, 3000)
           }
         }
       })
@@ -127,11 +184,11 @@ onMounted(() => {
     <div class="terminal">
       <div class="scanline"></div>
       <div class="terminal-text">
-        <div class="line">> Initializing system...</div>
-        <div class="line">> Loading completion sequence...</div>
-        <div class="line">> Accessing memory banks...</div>
-        <div class="line">> Processing final data...</div>
-        <div class="line">> System ready.</div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
       </div>
     </div>
     <div class="particles">
@@ -143,7 +200,7 @@ onMounted(() => {
     <div class="credits">
       <h2>By Eric and Jarvis</h2>
       <div class="note">-This project was only a demo. Pay to play the real game</div>
-      <button class="menu-button " @click="goToMenu">Go back to menu?</button>
+      <button class="menu-button" @click="goToMenu">Go back to menu?</button>
     </div>
   </div>
 </template>
@@ -196,6 +253,7 @@ onMounted(() => {
 }
 
 .line {
+  min-height: 1.5em;
   margin: 10px 0;
   opacity: 0;
   animation: typewriter 0.5s steps(40) forwards;
