@@ -11,8 +11,6 @@ import { supabase } from './supabase.ts'
 </script>
 
 <template>
-  <GameUI v-if="session" :session="session" />
-  <Terminal v-else />
   <RouterView /> 
   <!-- <ReusableModal></ReusableModal> -->
   <!-- <EscapeMenu />-->

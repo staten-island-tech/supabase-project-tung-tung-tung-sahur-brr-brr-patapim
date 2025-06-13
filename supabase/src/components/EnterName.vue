@@ -27,9 +27,13 @@ async function handleClick(label) {
   } else if (label == 'CLEAR') {
     name.value = ''
   } else if (label == 'ENTER') {
-    gameFuncs.username = name.value
-    await gameFuncs.saveProfileData()
-    router.replace({ name: 'game' })
+    if (name.value.length != 0) {
+      gameFuncs.username = name.value
+      await gameFuncs.saveProfileData()
+      router.replace({ name: 'game' })
+    } else {
+      alert('Error: empty name input.')
+    }
   } else if (label == 'QUIT') {
     router.replace({ name: 'menu' })
   } else {
