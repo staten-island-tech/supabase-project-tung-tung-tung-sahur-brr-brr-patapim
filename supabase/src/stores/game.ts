@@ -1,58 +1,61 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = 'https://rjkjqvosqgduopywremy.supabase.co'
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqa2pxdm9zcWdkdW9weXdyZW15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM3MDA2NTYsImV4cCI6MjA1OTI3NjY1Nn0.OiPj-SLgHxVc7IFqLykiOM2z7MOLTkyvv161uJrSf5w'
+import { supabase } from '../supabase.ts'
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+type InventoryItem = string
 
 interface Player {
-  x: number
-  y: number
-  speed: number
-  direction: 'up' | 'down' | 'left' | 'right'
-  currentMap: string
+  coordinates: number
+  direction: 'north' | 'south' | 'west' | 'east'
+  inventory: InventoryItem[]
+  map: string
 }
 
-interface InventoryItem {
-  id: string
-  name: string
-  description: string
-  icon: string
-  isKeyItem: boolean
-  quantity?: number
+interface MapData {
+  map: string;
+  items: string[];
+  accessibility: string;
 }
 
-interface StoryFlag {
-  id: string
-  value: boolean
-}
+const initialMapData: MapData[] = [
+  { map: 'attic', items: ['placeholder', 'placeholder2'], accessibility: 'unlocked'},
+  { map: 'atticentrance', items: [], accessibility: 'locked'},
+  { map: 'boybathroom', items: [], accessibility: 'unlocked'},
+  { map: 'boyroom', items: [], accessibility: 'unlocked'},
+  { map: 'church', items: [], accessibility: 'locked'},
+  { map: 'diningroom', items: [], accessibility: 'unlocked'},
+  { map: 'dungeon', items: [], accessibility: 'unlocked'},
+  { map: 'flooronemain', items: [], accessibility: 'unlocked'},
+  { map: 'floortwohallway', items: [], accessibility: 'unlocked'},
+  { map: 'kitchen', items: [], accessibility: 'unlocked'},
+  { map: 'livingroom', items: [], accessibility: 'locked'},
+  { map: 'parentbathroom', items: [], accessibility: 'unlocked'},
+  { map: 'parentroom', items: [], accessibility: 'unlocked'},
+]
 
 export const useGameStore = defineStore('game', () => {
-  // === State ===
-  const userId = ref<string | null>(null) // Logged-in user's ID
+
+  const userId = ref<string | null>(null) 
   const username = ref<string | null>(null)
   const player = ref<Player>({
-    x: 100,
-    y: 100,
-    speed: 3,
-    direction: 'down',
-    currentMap: 'start',
+    coordinates: 37,
+    direction: 'south',
+    map: 'boyroom',
+    inventory: []
   })
-  const gameStarted = ref(false)
-  const inventory = ref<InventoryItem[]>([])
-  const sanity = ref(100)
-  const storyFlags = ref<StoryFlag[]>([])
+  const items = ref<string[]>([])
+  const accessibility = ref<string | null>(null)
 
-  // === Actions ===
 
-  // Fetch the logged-in user's ID from Supabase
   async function fetchUser() {
     const { data, error } = await supabase.auth.getSession()
-    if (data.session) {
+
+    if (error) {
+      console.log('Error fetching user:', error.message)
+    } else if (data.session) {
       userId.value = data.session.user.id
-      await loadProfileData() // Load game data for the logged-in user
+      await loadProfileData()
     } else {
       userId.value = null
     }
@@ -71,6 +74,10 @@ export const useGameStore = defineStore('game', () => {
       console.error('Error loading profile data:', error.message)
     } else if (data) {
       username.value = data.username
+      player.value.inventory = data.inventory
+      player.value.direction = data.direction
+      player.value.coordinates = data.coordinates
+      player.value.map = data.map
     }
   }
 
@@ -80,130 +87,85 @@ export const useGameStore = defineStore('game', () => {
     const { error } = await supabase.from('profiles').upsert({
       id: userId.value,
       username: username.value,
+      inventory: player.value.inventory,
+      direction: player.value.direction,
+      coordinates: player.value.coordinates,
+      map: player.value.map,
     })
     
     if (error) {
       console.error('Error saving profile data:', error.message)
     }
   }
-  // Save game data to Supabase
-  async function saveGameData() {
-    if (!userId.value) return
+  
 
-    const { error } = await supabase.from('game_data').upsert({
-      user_id: userId.value,
-      player: player.value,
-      inventory: inventory.value,
-      sanity: sanity.value,
-      story_flags: storyFlags.value,
-    })
-
-    if (error) {
-      console.error('Error saving game data:', error.message)
-    }
-  }
-
-  // Load game data from Supabase
-  async function loadGameData() {
-    if (!userId.value) return
-
-    const { data, error } = await supabase
-      .from('game_data')
-      .select('*')
-      .eq('user_id', userId.value)
-      .single()
-
-    if (error) {
-      console.error('Error loading game data:', error.message)
-    } else if (data) {
-      player.value = data.player
-      inventory.value = data.inventory
-      sanity.value = data.sanity
-      storyFlags.value = data.story_flags
-    }
-  }
-
-  // Clear game data on logout
-  function clearGameData() {
+  function clearProfileData() {
     userId.value = null
-    player.value = { x: 100, y: 100, speed: 3, direction: 'down', currentMap: 'start' }
-    inventory.value = []
-    sanity.value = 100
-    storyFlags.value = []
+    player.value = { coordinates: 0, direction: 'south', map: 'boyroom', inventory: [] }
   }
 
   // Inventory Management
   function addToInventory(item: InventoryItem) {
-    const existingItem = inventory.value.find((i) => i.id === item.id)
-    if (existingItem && item.quantity) {
-      existingItem.quantity = (existingItem.quantity || 1) + item.quantity
-    } else {
-      inventory.value.push(item)
+    player.value.inventory.push(item)
+    saveProfileData() 
+  } // will need to remove it from the map at that point while player is universal.
+
+  function removeFromInventory(item: InventoryItem) {
+    player.value.inventory = player.value.inventory.filter(object => object != item)
+    saveProfileData() // Save changes to Supabase
+  }
+
+  async function fetchMapData(map: string) {
+    if (!userId.value) return
+
+    const { data, error } = await supabase
+      .from(`${map}`)
+      .select('*')
+      .eq('id', userId.value)
+      .single()
+
+    if (error) {
+      console.error('Error loading map data:', error.message)
+    } else if (data) {
+      items.value = data.items
+      accessibility.value = data.accessibility
     }
-    saveGameData() // Save changes to Supabase
   }
 
-  function removeFromInventory(itemId: string, quantity: number = 1) {
-    const itemIndex = inventory.value.findIndex((i) => i.id === itemId)
-    if (itemIndex !== -1) {
-      const item = inventory.value[itemIndex]
-      if (item.quantity && item.quantity > quantity) {
-        item.quantity -= quantity
-      } else {
-        inventory.value.splice(itemIndex, 1)
-      }
+  async function changeMapData(map: string, items: string[] | null, accessibility: string | null) {
+    if (!userId.value) return
+
+    const { error } = await supabase.from(`${map}`).upsert({
+      id: userId.value,
+      items: items,
+      accessibility: accessibility
+    })
+    
+    if (error) {
+      console.error('Error adding map data:', error.message)
     }
-    saveGameData() // Save changes to Supabase
   }
 
-  // Sanity Management
-  function adjustSanity(amount: number) {
-    sanity.value = Math.max(0, Math.min(100, sanity.value + amount))
-    saveGameData() // Save changes to Supabase
-  }
-
-  // Story Progression
-  function setStoryFlag(flagId: string, value: boolean) {
-    const existingFlag = storyFlags.value.find((flag) => flag.id === flagId)
-    if (existingFlag) {
-      existingFlag.value = value
-    } else {
-      storyFlags.value.push({ id: flagId, value })
+  async function startGame() {
+    for (const location of initialMapData) {
+      await changeMapData(location.map, location.items, location.accessibility);
     }
-    saveGameData() // Save changes to Supabase
   }
-
-  function getStoryFlag(flagId: string): boolean {
-    const flag = storyFlags.value.find((flag) => flag.id === flagId)
-    return flag ? flag.value : false
-  }
-
-  // === Getters ===
-  const isPlayerMoving = computed(() => player.value.speed > 0)
-  const inventoryCount = computed(() => inventory.value.length)
-  const isGameOver = computed(() => sanity.value <= 0)
 
   return {
     userId,
     username,
     player,
-    gameStarted,
-    inventory,
-    sanity,
-    storyFlags,
+    items,
+    accessibility,
     fetchUser,
     loadProfileData,
     saveProfileData,
-    saveGameData,
-    loadGameData,
-    clearGameData,
+    clearProfileData,
     addToInventory,
     removeFromInventory,
-    adjustSanity,
-    setStoryFlag,
-    getStoryFlag,
-    isPlayerMoving,
-    inventoryCount,
-    isGameOver,
+    fetchMapData,
+    changeMapData,
+    startGame,
   }
 })

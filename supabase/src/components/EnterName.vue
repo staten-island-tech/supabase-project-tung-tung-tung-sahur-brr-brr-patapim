@@ -22,20 +22,34 @@ function nameAdd(value) {
 
 async function handleClick(label) {
   await gameFuncs.fetchUser()
+
   if (label == 'DEL') {
     name.value = name.value.slice(0, -1)
+
   } else if (label == 'CLEAR') {
     name.value = ''
+
   } else if (label == 'ENTER') {
+
     if (name.value.length != 0) {
+
       gameFuncs.username = name.value
+
+      gameFuncs.player.coordinates = 37
+      gameFuncs.player.direction = 'south',
+      gameFuncs.player.map = 'boyroom',
+      gameFuncs.player.inventory = []
+
       await gameFuncs.saveProfileData()
+      await gameFuncs.startGame()
       router.replace({ name: 'game' })
     } else {
       alert('Error: empty name input.')
     }
+
   } else if (label == 'QUIT') {
     router.replace({ name: 'menu' })
+
   } else {
     nameAdd(label)
   }

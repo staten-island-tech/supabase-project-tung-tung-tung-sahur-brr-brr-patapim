@@ -137,14 +137,6 @@ const handleAuth = async () => {
       : await supabase.auth.signUp({
           email: email_supabase.value,
           password: password_supabase.value,
-          options: {
-            data: {
-              inventory: [],
-              direction: 'South',
-              coordinates: 37,
-              map: 'boyroom'
-            }
-          }
         })
 
     let oldLog = isLoggingIn.value
