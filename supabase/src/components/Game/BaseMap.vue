@@ -30,7 +30,7 @@ const MAP_WIDTH = props.mapWidth
 const MAP_HEIGHT = props.mapHeight
 const SPRITE_SIZE = 80 // Size of each sprite frame (320/4 frames)
 const ANIMATION_SPEED = 125 // Milliseconds between frame changes
-const SPRITE_SCALE = 4 // Increased from 3 to 4 for a bigger sprite
+const SPRITE_SCALE = 4.5 // Increased from 3 to 4 for a bigger sprite
 
 // Game state
 const canvasRef = ref<HTMLCanvasElement | null>(null)
