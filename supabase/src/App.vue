@@ -7,13 +7,14 @@ import GameCanvas from './components/GameCanvas.vue'
 import { onMounted, ref } from 'vue'
 import { supabase } from './supabase.ts'
 import EndScreen from './components/UI/EndScreen.vue'
+import InventoryUI from './components/UI/InventoryUI.vue'
 </script>
 
 <template>
-  <EndScreen />
+  <!-- <EndScreen /> -->
   <!-- <RouterView />  -->
-
-  <!-- <EscapeMenu />-->
+  <InventoryUI />
+  <!-- <EscapeMenu /> -->
 </template>
 
 <style>
