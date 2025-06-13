@@ -6,26 +6,25 @@ const emit = defineEmits<{
   (e: 'changeMap', map: string): void
 }>()
 
-// Map-specific configuration
 const mapConfig = {
   mapWidth: 8,
   mapHeight: 12,
   tileSize: 48,
   tilesetPath: '/maps/BoyRoom.png',
-  initialPlayerPosition: { x: 5, y: 4 }, // Tile 37 = (5,4) because 37 = 4 * 8 + 5
+  initialPlayerPosition: { x: 5, y: 4 },
   collisionMap: [
-    1, 1, 1, 1, 1, 1, 1, 1,  // Row 0
-    1, 1, 1, 1, 1, 1, 1, 1,  // Row 1
-    1, 1, 1, 1, 1, 1, 1, 1,  // Row 2
-    1, 1, 1, 1, 0, 1, 1, 1,  // Row 3
-    1, 0, 0, 0, 0, 0, 1, 1,  // Row 4
-    0, 0, 0, 0, 0, 0, 0, 1,  // Row 5
-    1, 0, 0, 0, 0, 0, 0, 1,  // Row 6
-    1, 0, 0, 0, 0, 0, 0, 1,  // Row 7
-    1, 0, 0, 0, 0, 0, 0, 1,  // Row 8
-    1, 1, 0, 0, 0, 0, 1, 1,  // Row 9
-    1, 1, 0, 0, 0, 1, 1, 1,  // Row 10
-    1, 1, 1, 0, 1, 1, 1, 1   // Row 11
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 0, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 0, 0, 0, 0, 1, 1,
+    1, 1, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 0, 1, 1, 1, 1
   ],
   interactables: {
     17: 'A closet',
