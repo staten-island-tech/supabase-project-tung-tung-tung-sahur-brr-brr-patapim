@@ -57,10 +57,27 @@ router.beforeEach(async (to, from, next) => {
     if (!session) {
       // If no session, redirect to home/login page
       next({ name: 'home' })
-    } else {
-      // If session exists, allow access
-      next()
+      return
     }
+
+    // Initialize game store and fetch user data
+    const gameStore = useGameStore()
+    await gameStore.fetchUser()
+
+    // If user has no username, redirect to name entry
+    if (!gameStore.username && to.name !== 'name') {
+      next({ name: 'name' })
+      return
+    }
+
+    // If user has username but tries to access name entry, redirect to game
+    if (gameStore.username && to.name === 'name') {
+      next({ name: 'game' })
+      return
+    }
+
+    // If all checks pass, allow access
+    next()
   } else {
     // If route doesn't require auth, allow access
     next()
