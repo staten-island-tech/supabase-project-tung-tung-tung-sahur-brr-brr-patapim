@@ -55,21 +55,21 @@ watch(() => props.isVisible, (isVisible) => {
 
 const startTypewriterEffect = (text: string) => {
   stopTypewriterEffect()
-  
+
   displayText.value = ''
   isTyping.value = true
   canInteract.value = false
-  
+
   if (!typingAudio.value) {
     typingAudio.value = new Audio('/sfx/typing.mp3')
     typingAudio.value.loop = true
     typingAudio.value.volume = 0.3
   }
-  
+
   typingAudio.value.play().catch(error => {
     console.error('Error playing typing sound:', error)
   })
-  
+
   let currentIndex = 0
   currentTypeInterval.value = window.setInterval(() => {
     if (currentIndex < text.length) {
@@ -179,7 +179,7 @@ const itemDescriptions: Record<string, ItemDescription> = {
 
 const handleAction = (actionId: ActionType): void => {
   if (!canInteract.value) return
-  
+
   const item = itemDescriptions[props.itemName]
   if (!item) {
     console.error(`No description found for item: ${props.itemName}`)
@@ -198,31 +198,31 @@ const handleAction = (actionId: ActionType): void => {
   }
 
   console.log(`Action "${actionId}" on ${props.itemName}`)
-  
+
   if (props.itemName === 'A half cracked barrel' && actionId === 'search') {
-    const hasHammer = gameStore.player.inventory.includes('Hammer')
+    const hasHammer = gameStore.player.inventory.includes(gameStore.items[0])
     if (hasHammer) {
       displayText.value = 'The barrel is empty.'
       return
     }
-    gameStore.addToInventory('Hammer')
+    gameStore.addToInventory(gameStore.items[0])
     gameStore.saveProfileData()
-    displayText.value = 'You found a hammer inside the barrel!'
+    displayText.value = `You found a ${gameStore.items[0]} inside the barrel!`
     return
   }
-  
+
   if (props.itemName === 'A closet' && actionId === 'search') {
-    const hasHammer = gameStore.player.inventory.includes('Hammer')
-    const hasKey = gameStore.player.inventory.includes('Front Door Key')
-    
+    const hasHammer = gameStore.player.inventory.includes(gameStore.items[0])
+    const hasKey = gameStore.player.inventory.includes(gameStore.items[1])
+
     if (hasKey) {
       displayText.value = 'The closet is empty.'
       return
     }
-    
+
     if (hasHammer) {
-      displayText.value = 'You used the hammer to wedge open the closet and reveal your front door key'
-      gameStore.addToInventory('Front Door Key')
+      displayText.value = `You used the ${gameStore.items[0]} to wedge open the closet and reveal your ${gameStore.items[1]}`
+      gameStore.addToInventory(gameStore.items[1])
       gameStore.saveProfileData()
     } else {
       displayText.value = 'The closet seems to be stuck. You need something to pry it open.'
@@ -231,25 +231,25 @@ const handleAction = (actionId: ActionType): void => {
   }
 
   if (props.itemName === 'The hallway door' && actionId === 'tryOpen') {
-    const hasKey = gameStore.player.inventory.includes('Front Door Key')
+    const hasKey = gameStore.player.inventory.includes(gameStore.items[1])
     if (hasKey) {
-      displayText.value = 'You use the front door key to unlock the door...'
+      displayText.value = `You use the ${gameStore.items[1]} to unlock the door...`
       setTimeout(() => {
         router.push('/end')
       }, 2000)
     } else {
-      displayText.value = 'The door is locked. You need a key to open it.'
+      displayText.value = `The door is locked. You need a ${gameStore.items[1]} to open it.`
     }
     return
   }
-  
+
   if (actionId === 'search') {
     displayText.value = 'Nothing to be found.'
     return
   }
-  
+
   emit('action', actionId, props.itemName)
-  
+
   switch (actionId) {
     case 'leave':
       props.onClose()
@@ -284,19 +284,14 @@ onMounted(() => {
         <h3>{{ itemName }}</h3>
         <button @click="onClose" class="close-button" :disabled="!canInteract">×</button>
       </div>
-      
+
       <div class="dialogue-content">
         <p>{{ displayText }}<span v-if="isTyping" class="cursor">|</span></p>
-        
+
         <div class="action-buttons" v-if="!isTyping">
-          <button 
-            v-for="action in itemDescriptions[itemName]?.actions"
-            :key="action.id"
-            @click="handleAction(action.id)"
-            class="action-button"
-            :class="action.type"
-            :disabled="!action.available || !canInteract"
-          >
+          <button v-for="action in itemDescriptions[itemName]?.actions" :key="action.id"
+            @click="handleAction(action.id)" class="action-button" :class="action.type"
+            :disabled="!action.available || !canInteract">
             {{ action.label }}
           </button>
         </div>
@@ -431,8 +426,15 @@ onMounted(() => {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
 .close-button:disabled {

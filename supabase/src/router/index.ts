@@ -55,6 +55,7 @@ router.beforeEach(async (to, from, next) => {
     }
     const gameStore = useGameStore()
     await gameStore.fetchUser()
+    await gameStore.fetchMapData()
     if (!gameStore.username && to.name !== 'name' && to.name !== 'menu' ) {
       next({ name: 'name' })
       return
